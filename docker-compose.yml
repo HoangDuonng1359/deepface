@@ -7,10 +7,23 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - backend
-
-  backend:
+      - model
+      - database
+  frontend_admin:
     build:
-      context: ./backend
+      context: ./frontend_admin
+    ports:
+      - "8081:8081"
+    depends_on:
+      - model
+      - database
+  model:
+    build:
+      context: ./model
     ports:
       - "5000:5000"
+  database:
+    build:
+      context: ./database
+    ports:
+      - "5050:5050"
