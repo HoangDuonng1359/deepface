@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Layout, 
   Menu, 
@@ -133,7 +134,7 @@ const HomePage: React.FC = () => {
             {
               key: '2',
               icon: <VideoCameraOutlined />,
-              label: 'Điểm danh',
+              label: <Link to="/FacialAttendance">Điểm danh</Link>,
             },
             {
               key: '3',
