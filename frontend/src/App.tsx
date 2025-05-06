@@ -4,6 +4,7 @@ import './App.css';
 import HomePage from './page/HomePage';
 import { BrowserRouter, Route, Router, Routes } from 'react-router-dom';
 import FacialAttendance from './page/FacialAttendance';
+import DeepFacePage from './page/DeepFacePage';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path='/' element={<HomePage></HomePage>}></Route>
           <Route path='/FacialAttendance' element = {<FacialAttendance></FacialAttendance>} ></Route>
+          <Route path= '/deepface' element = {<DeepFacePage></DeepFacePage>}></Route>
         </Routes>
       </BrowserRouter>
   );
