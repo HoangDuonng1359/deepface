@@ -1,1 +1,8 @@
 flask
+flask-api
+flask-cors
+tensorflow
+tf-keras
+deepface
+opencv-python-headless
+opencv-python
