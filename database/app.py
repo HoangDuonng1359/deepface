@@ -1,10 +1,12 @@
-from flask import Flask, jsonify
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return jsonify({"message": "Hello from the database service!"})
+app = FastAPI()
+
+@app.get("/api/courses")
+async def get_courses():
+    pass
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5050)
