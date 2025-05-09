@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 5050
 
 # Lệnh chạy ứng dụng
-CMD ["python", "app.py"]
+CMD ["python", "main.py"]
