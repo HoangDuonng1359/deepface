@@ -1,5 +1,5 @@
 # Sử dụng image Python chính thức
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 # Cài đặt thư viện hệ thống cần thiết
 RUN apt-get update && apt-get install -y \
