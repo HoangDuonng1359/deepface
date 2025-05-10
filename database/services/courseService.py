@@ -2,11 +2,10 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from pydantic import BaseModel
-from database.services.databaseService import Service
 
 
 
-class CourseService(Service):
+class CourseService:
     
     @staticmethod
     def get_all_courses():
@@ -19,13 +18,19 @@ class CourseService(Service):
             },
         ]
 
+    @staticmethod
     def get_course_by_id(self, course_id):
+    
         pass
 
+    @staticmethod
     def create_course(self, course : BaseModel):
         pass
 
+    @staticmethod
+    def update_course(self, course : BaseModel):
+        pass
 
-
-
-
+    @staticmethod
+    def delete_course(self, course_id):
+        pass
