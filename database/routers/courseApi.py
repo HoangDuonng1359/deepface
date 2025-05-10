@@ -1,11 +1,17 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
 from fastapi import APIRouter
 from pydantic import BaseModel
+from database.services.courseService import CourseService
 
 router = APIRouter(prefix="/api/courses")
 
+
 @router.get("/")
 async def get_all_courses():
-    return {"message": "List of all courses"}
+    return CourseService.get_all_courses()
 
 @router.get("/{course_id}")
 async def get_course(course_id: int):
