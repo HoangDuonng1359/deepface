@@ -23,14 +23,16 @@ async def get_student(student_id: int):
     """
     Lấy thông tin sinh viên theo ID
     """
-    return {"message": f"Get student with ID {student_id}"}
+    student = StudentService.get_student_by_id(student_id)
+    return student
 
 @router.post("/")
 async def create_student(student: StudentCreateRequestEntity):
     """
     Tạo sinh viên mới
     """
-    return {"message": "Create a new student", "student": student}
+    result = StudentService.create_student(student)
+    return result
 
 @router.put("/{student_id}")
 async def update_student(student_id: int, student: StudentUpdateRequestEntity):

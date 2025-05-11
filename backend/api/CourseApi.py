@@ -9,7 +9,7 @@ from entities.CourseEntity import (
 router = APIRouter(prefix="/api/courses", tags=["courses"])
 
 @router.get("/")
-async def get_courses():
+async def get_all_courses():
     """
     Lấy tất cả lớp học
     """

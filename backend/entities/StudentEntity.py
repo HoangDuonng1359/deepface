@@ -5,8 +5,9 @@ class StudentEntity(BaseModel):
     name: str
 
 class StudentCreateRequestEntity(BaseModel):
-    pass
+    id: str = Field(..., description="Mã sinh viên", example="23020001")
+    name: str = Field(..., description="Tên sinh viên", example="Nguyen Van A")
 
 class StudentUpdateRequestEntity(BaseModel):
-    pass
+    name: str = Field(..., description="Tên sinh viên", example="Nguyen Van B")
 
