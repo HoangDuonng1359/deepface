@@ -19,11 +19,15 @@ async def get_all_students():
     return all_students
 
 @router.get("/{student_id}")
-async def get_student(student_id: int):
+async def get_student(student_id: int) -> StudentEntity:
     """
     Lấy thông tin sinh viên theo ID
     """
-    student = StudentService.get_student_by_id(student_id)
+    output = StudentService.get_student_by_id(student_id)
+    if output is None:
+        return {"result": 0, "message": "Không có sinh viên nào với ID này"}
+    
+    student = StudentEntity(**output)
     return student
 
 @router.post("/")

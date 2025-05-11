@@ -14,7 +14,7 @@ class CourseService:
         pass
 
     @staticmethod
-    def get_course_by_id(course_id: int):
+    def get_course_by_id(course_id: int) -> CourseEntity:
         pass
 
     @staticmethod

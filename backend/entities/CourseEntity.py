@@ -5,7 +5,6 @@ class CourseEntity(BaseModel):
     name : str
     teacher: str
 
-
 class CourseCreateRequestEntity(BaseModel):
     id : str = Field(..., example="INT2008_1")
     name : str = Field(..., example="Công nghệ phần mềm")
