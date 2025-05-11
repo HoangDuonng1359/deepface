@@ -11,3 +11,7 @@ class StudentCreateRequestEntity(BaseModel):
 class StudentUpdateRequestEntity(BaseModel):
     name: str = Field(..., description="Tên sinh viên", example="Nguyen Van B")
 
+class StudentImageEntity(BaseModel):
+    image_id: str = Field(..., description="Mã ảnh sinh viên", example="1")
+    student_id: str = Field(..., description="Mã sinh viên", example="23020001")
+    base64_image: str = Field(..., description="Hình ảnh sinh viên", example="base64_image_string")
