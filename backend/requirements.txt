@@ -1,0 +1,7 @@
+fastapi
+pydantic
+uvicorn
+deepface
+mysql-connector-python
+pymysql
+cryptography
