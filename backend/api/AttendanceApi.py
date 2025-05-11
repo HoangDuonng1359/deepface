@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/api/attendance", tags=["Attendance"])
+router = APIRouter(prefix="/api/attendance", tags=["attendance"])
 
 @router.post("/")
 async def create_attendance():
