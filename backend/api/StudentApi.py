@@ -51,3 +51,11 @@ async def delete_student(student_id: int):
     Xóa sinh viên theo ID
     """
     return {"message": f"Delete student with ID {student_id}"}
+
+@router.post("/{student_image}")
+async def upload_student_image(image: StudentImageEntity):
+    """
+    Tải lên ảnh sinh viên
+    """
+    result = StudentService.upload_student_image()
+    return result
