@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 5050
 
 # Lệnh chạy ứng dụng
-CMD ["python", "-m", "uvicorn", "main:app", "--reload"]
+CMD ["python", "-m", "uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,22 +1,22 @@
 version: '3.9'
 
 services:
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - model
-      - database
-  frontend_admin:
-    build:
-      context: ./frontend_admin
-    ports:
-      - "8081:8081"
-    depends_on:
-      - model
-      - database
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   ports:
+  #     - "3000:80"
+  #   depends_on:
+  #     - model
+  #     - database
+  # frontend_admin:
+  #   build:
+  #     context: ./frontend_admin
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     - model
+  #     - database
   backend:
     container_name: backend
     platform: linux/x86_64

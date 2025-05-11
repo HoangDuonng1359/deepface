@@ -6,14 +6,17 @@ from entities.StudentEntity import (
     StudentUpdateRequestEntity 
 )
 
+from services.StudentService import StudentService
+
 router = APIRouter(prefix="/api/students", tags=["students"])
 
 @router.get("/")
-async def get_students():
+async def get_all_students():
     """
     Lấy tất cả sinh viên
     """
-    return {"message": "Get all students"}
+    all_students = StudentService.get_all_students()
+    return all_students
 
 @router.get("/{student_id}")
 async def get_student(student_id: int):

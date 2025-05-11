@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
 
 class StudentEntity(BaseModel):
-    pass
+    id: str
+    name: str
 
 class StudentCreateRequestEntity(BaseModel):
     pass

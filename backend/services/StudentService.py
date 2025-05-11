@@ -11,7 +11,15 @@ class StudentService:
 
     @staticmethod
     def get_all_students():
-        pass
+        """
+        Lấy danh sách tất cả sinh viên
+        """
+
+        sql = "SELECT * FROM students"
+        params = ()
+        all_students = db.query_get(sql, params)
+
+        return all_students
 
     @staticmethod
     def get_student_by_id(student_id: int):
