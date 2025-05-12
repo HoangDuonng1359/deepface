@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hệ thống điểm danh</title>
+    <link rel="stylesheet" href="/admin_style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="header">
+                Admin
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-group">
+                    <div class="menu-group-title">trang chủ</div>
+                    <div class="menu-item" onclick="showPage('home')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: text-bottom;">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        Dashboard
+                    </div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">sinh viên</div>
+                    <div class="menu-item" onclick="showPage('view-students')">Xem sinh viên</div>
+                    <div class="menu-item" onclick="showPage('add-student')">Thêm sinh viên</div>
+                    <div class="menu-item" onclick="showPage('edit-student')">Sửa sinh viên</div>
+                </div>
+                <div class="menu-group">
+                    <div class="menu-group-title">khóa học</div>
+                    <div class="menu-item" onclick="showPage('view-classes')">Xem lớp học</div>
+                    <div class="menu-item" onclick="showPage('add-class')">Thêm lớp học</div>
+                    <div class="menu-item" onclick="showPage('edit-class')">Sửa lớp học</div>
+                </div>
+            </div>
+        </div>
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Admin Home Page -->
+            <div id="home" class="page active">
+                <div class="welcome-card">
+                    <h2>Xin chào, Quản trị viên!</h2>
+                    <p>Chào mừng đến với hệ thống quản lý điểm danh. Sử dụng menu bên trái để quản lý sinh viên và lớp học.</p>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stat-card students">
+                        <h3>Tổng số sinh viên</h3>
+                        <div class="number">248</div>
+                    </div>
+                    <div class="stat-card classes">
+                        <h3>Lớp học đang hoạt động</h3>
+                        <div class="number">12</div>
+                    </div>
+                    <div class="stat-card attendance">
+                        <h3>Tỷ lệ điểm danh</h3>
+                        <div class="number">92%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Student Page -->
+            <div id="add-student" class="page">
+                <div class="page-title">Thêm sinh viên</div>
+                <div class="form-group">
+                    <label>MSSV</label>
+                    <input type="text" placeholder="Nhập mã số sinh viên">
+                </div>
+                <div class="form-group">
+                    <label>Họ và tên</label>
+                    <input type="text" placeholder="Nhập họ và tên sinh viên">
+                </div>
+                <div class="student-cards">
+                    <div class="student-card">
+                        <div class="student-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="student-card">
+                        <div class="student-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="add-card">
+                        <span>+</span>
+                    </div>
+                </div>
+                <div style="margin-top: 25px;">
+                    <button class="btn">Thêm</button>
+                </div>
+            </div>
+
+            <!-- Edit Student Page -->
+            <div id="edit-student" class="page">
+                <div class="page-title">Sửa sinh viên</div>
+                <div class="search-box">
+                    <input type="text" placeholder="Nhập MSSV">
+                    <button>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label>Họ và tên</label>
+                    <input type="text" value="Nguyễn Văn A">
+                </div>
+                <div class="student-cards">
+                    <div class="student-card">
+                        <div class="student-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="student-card">
+                        <div class="student-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="add-card">
+                        <span>+</span>
+                    </div>
+                </div>
+                <div style="margin-top: 25px;">
+                    <button class="btn">Lưu</button>
+                </div>
+            </div>
+
+            <!-- View Students Page -->
+            <div id="view-students" class="page">
+                <div class="page-title">Xem sinh viên</div>
+                <div class="search-box">
+                    <input type="text" placeholder="Tìm kiếm sinh viên">
+                    <button>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>MSSV</th>
+                            <th>Họ và tên</th>
+                            <th>Lớp</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SV001</td>
+                            <td>Nguyễn Văn A</td>
+                            <td>CSE2101</td>
+                            <td><span class="badge badge-success">Đang học</span></td>
+                            <td class="action-column">
+                                <button class="btn btn-sm">Sửa</button>
+                                <button class="btn btn-sm btn-danger">Xóa</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>SV002</td>
+                            <td>Trần Thị B</td>
+                            <td>CSE2102</td>
+                            <td><span class="badge badge-success">Đang học</span></td>
+                            <td class="action-column">
+                                <button class="btn btn-sm">Sửa</button>
+                                <button class="btn btn-sm btn-danger">Xóa</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>SV003</td>
+                            <td>Lê Văn C</td>
+                            <td>CSE2101</td>
+                            <td><span class="badge badge-warning">Tạm nghỉ</span></td>
+                            <td class="action-column">
+                                <button class="btn btn-sm">Sửa</button>
+                                <button class="btn btn-sm btn-danger">Xóa</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="add-button">+</div>
+            </div>
+
+            <!-- Add Class Page -->
+            <div id="add-class" class="page">
+                <div class="page-title">Thêm lớp học</div>
+                <div class="form-group">
+                    <label>Mã lớp học</label>
+                    <input type="text" placeholder="Nhập mã lớp học">
+                </div>
+                <div class="form-group">
+                    <label>Tên môn học</label>
+                    <input type="text" placeholder="Nhập tên môn học">
+                </div>
+                <div class="form-group">
+                    <label>Giảng viên</label>
+                    <input type="text" placeholder="Nhập tên giảng viên">
+                </div>
+                <div style="margin-top: 25px;">
+                    <button class="btn btn-success" onclick="createNewClass()">Thêm lớp</button>
+                </div>
+            </div>
+
+            <!-- Edit Class Page -->
+            <div id="edit-class" class="page">
+                <div class="page-title">Sửa lớp học</div>
+                <div class="form-group">
+                    <label>Mã lớp học</label>
+                    <input type="text" value="CSE2101 1">
+                </div>
+                <div class="form-group">
+                    <label>Tên môn học</label>
+                    <input type="text" value="Công nghệ phần mềm">
+                </div>
+                <div class="form-group">
+                    <label>Giảng viên</label>
+                    <input type="text" value="Phạm Ngọc Hùng">
+                </div>
+                <div>
+                    <label style="font-weight: 500; display: block; margin-bottom: 15px; font-size: 16px;">Danh sách lớp:</label>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>MSSV</th>
+                                <th>Họ và tên</th>
+                                <th>Điểm danh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SV001</td>
+                                <td>Nguyễn Văn A</td>
+                                <td>18/20</td>
+                            </tr>
+                            <tr>
+                                <td>SV002</td>
+                                <td>Trần Thị B</td>
+                                <td>20/20</td>
+                            </tr>
+                            <tr>
+                                <td>SV003</td>
+                                <td>Lê Văn C</td>
+                                <td>15/20</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="add-button">+</div>
+            </div>
+
+            <!-- View Classes Page -->
+            <div id="view-classes" class="page">
+                <div class="page-title">Xem lớp học</div>
+                <div class="search-box">
+                    <input type="text" placeholder="Tìm kiếm lớp học">
+                    <button>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Mã lớp</th>
+                            <th>Tên môn học</th>
+                            <th>Giảng viên</th>
+                            <th>Số sinh viên</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CSE2101</td>
+                            <td>Công nghệ phần mềm</td>
+                            <td>Phạm Ngọc Hùng</td>
+                            <td>35</td>
+                            <td class="action-column">
+                                <button class="btn btn-sm" onclick="viewClassDetails('CSE2101')">Sửa</button>
+                                <button class="btn btn-sm btn-danger">Xóa</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CSE2102</td>
+                            <td>Phân tích thiết kế hệ thống</td>
+                            <td>Nguyễn Thị D</td>
+                            <td>30</td>
+                            <td class="action-column">
+                                <button class="btn btn-sm">Sửa</button>
+                                <button class="btn btn-sm btn-danger">Xóa</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CSE2103</td>
+                            <td>Lập trình di động</td>
+                            <td>Trần Văn E</td>
+                            <td>28</td>
+                            <td class="action-column">
+                                <button class="btn btn-sm">Sửa</button>
+                                <button class="btn btn-sm btn-danger">Xóa</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="add-button">+</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin_js.js"></script>
+</body>
+</html>
