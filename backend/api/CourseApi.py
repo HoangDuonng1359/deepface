@@ -6,6 +6,7 @@ from entities.CourseEntity import (
     CourseUpdateRequestEntity 
 )
 
+from services.CourseService import CourseService
 router = APIRouter(prefix="/api/courses", tags=["courses"])
 
 @router.get("/")
@@ -13,32 +14,34 @@ async def get_all_courses():
     """
     Lấy tất cả lớp học
     """
-    return {"message": "Get all courses"}
+    result = CourseService.get_all_courses()
+    return result
 
 @router.get("/{course_id}")
-async def get_course(course_id: int):
+async def get_course(course_id: str):
     """
     Lấy thông tin lớp học theo ID
     """
-    return {"message": f"Get course with ID {course_id}"}
+    return CourseService.get_course_by_id(course_id)
 
 @router.post("/")
 async def create_course(course: CourseCreateRequestEntity):
     """
     Tạo lớp học mới
     """
-    return {"message": "Create a new course", "course": course}
+    newCourse = CourseService.create_course(course)
+    return {"message": "Create a new course", "course": newCourse}
 
 @router.put("/{course_id}")
-async def update_course(course_id: int, course: CourseUpdateRequestEntity):
+async def update_course(course_id: str, course: CourseUpdateRequestEntity):
     """
     Cập nhật thông tin lớp học theo ID
     """
-    return {"message": f"Update course with ID {course_id}", "course": course}
+    return CourseService.update_course(course_id, course)
 
 @router.delete("/{course_id}")
-async def delete_course(course_id: int):
+async def delete_course(course_id: str):
     """
     Xóa lớp học theo ID
     """
-    return {"message": f"Delete course with ID {course_id}"}
+    return CourseService.delete_course(course_id)
