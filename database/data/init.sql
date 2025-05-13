@@ -18,12 +18,12 @@ create table if not exists student_image
 create table if not exists student_course
 (
     student_id int not null, 
-    course_id int not null
+    course_id varchar(16) not null
 );
 
 create table if not exists courses
 (
-    course_id int not null,
+    course_id varchar(16) not null,
     course_name varchar(128) null,
     teacher_name varchar(128) null
 );
@@ -31,7 +31,7 @@ create table if not exists courses
 create table if not exists attendance
 (
     attendance_id int not null, 
-    course_id int not null,
+    course_id varchar(16) not null,
     timeLimit datetime not null
 );
 
@@ -79,8 +79,3 @@ alter table student_attendance
 
 alter table student_attendance
 	add constraint foreign key(attendance_id) references attendance(attendance_id) on delete cascade;
-
-
--- insert into students (id, name) values
--- (202, 'Lam Duc Anh'),
--- (203, 'Nguyen Van A');
