@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-class ReturnEntity(BaseModel):
+class ResponseEntity(BaseModel):
     success: bool
     message: str
     data: BaseModel | None = None
