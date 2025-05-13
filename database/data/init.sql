@@ -1,3 +1,6 @@
+create database if not exists deepface_database;
+use deepface_database;
+
 create table if not exists attendances
 (
     attendance_id int auto_increment primary key,
