@@ -1,81 +1,76 @@
-create database if not exists deepface_database;
-use deepface_database;
-
-
-create table if not exists students
+create table if not exists attendances
 (
-    id   int  not null,
-    name varchar(128) null
-);
-
-create table if not exists student_image
-(
-    image_id    int not null AUTO_INCREMENT primary key,
-    student_id int not null, 
-    base64_image LONGBLOB
-);
-
-create table if not exists student_course
-(
-    student_id int not null, 
-    course_id varchar(16) not null
+    attendance_id int auto_increment primary key,
+    course_id     varchar(16) not null,
+    time_limit    time        null,
+    auto_end      tinyint(1)  null
 );
 
 create table if not exists courses
 (
-    course_id varchar(16) not null,
-    course_name varchar(128) null,
-    teacher_name varchar(128) null
+    course_id    varchar(16)  not null,
+    course_name  varchar(256) not null,
+    teacher_name varchar(256) not null
 );
 
-create table if not exists attendance
-(
-    attendance_id int not null, 
-    course_id varchar(16) not null,
-    timeLimit datetime not null
-);
+alter table courses
+    add primary key (course_id);
 
+alter table attendances
+    add constraint attendances_courses_course_id_fk
+        foreign key (course_id) references courses (course_id);
 
 create table if not exists student_attendance
 (
-    student_id int not null,
-    attendance_id int not null
+    student_id    varchar(16) not null,
+    attendance_id int         not null,
+    time_in       datetime    not null
 );
 
-
--- tao khoa chinh cho cac bang
-    
-alter table students
-	add constraint primary key (id); 
-
-alter table student_course 
-	add constraint primary key (student_id, course_id);
-    
-alter table courses
-	add constraint primary key (course_id);
-    
-alter table attendance
-	add constraint primary key (attendance_id);
-    
 alter table student_attendance
-	add constraint primary key (student_id, attendance_id);
+    add primary key (attendance_id, student_id);
 
+alter table student_attendance
+    add constraint student_attendance_attendances_attendance_id_fk
+        foreign key (attendance_id) references attendances (attendance_id);
 
--- tao khoa ngoai cho cac bang
-alter table student_image
-	add constraint foreign key(student_id) references students(id) on delete cascade;
-
-alter table student_course 
-	add constraint foreign key(student_id) references students(id) on delete cascade;
+create table if not exists student_course
+(
+    student_id varchar(16) not null,
+    course_id  varchar(16) not null
+);
 
 alter table student_course
-	add constraint foreign key(course_id) references courses(course_id) on delete cascade;
+    add primary key (student_id, course_id);
 
-alter table attendance
-	add constraint foreign key(course_id) references courses(course_id) on delete cascade;
+alter table student_course
+    add constraint student_course_courses_course_id_fk
+        foreign key (course_id) references courses (course_id);
 
-alter table student_attendance 
-	add constraint foreign key(student_id) references students(id) on delete cascade;
+create table if not exists student_image
+(
+    image_id   int auto_increment primary key,
+    student_id varchar(16) not null,
+    image      longblob    not null
+);
+
+create table if not exists students
+(
+    student_id   varchar(16)  not null,
+    student_name varchar(256) not null
+);
+
+alter table students
+    add primary key (student_id);
 
 alter table student_attendance
-	add constraint foreign key(attendance_id) references attendance(attendance_id) on delete cascade;
+    add constraint student_attendance_students_student_id_fk
+        foreign key (student_id) references students (student_id);
+
+alter table student_course
+    add constraint student_course_students_student_id_fk
+        foreign key (student_id) references students (student_id);
+
+alter table student_image
+    add constraint student_image_students_student_id_fk
+        foreign key (student_id) references students (student_id);
