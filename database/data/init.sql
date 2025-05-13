@@ -4,20 +4,20 @@ use deepface_database;
 
 create table if not exists students
 (
-    id   varchar(16)  not null,
+    id   int  not null,
     name varchar(128) null
 );
 
 create table if not exists student_image
 (
-    image_id    varchar(16) not null,
-    student_id varchar(16) not null, 
+    image_id    int not null AUTO_INCREMENT primary key,
+    student_id int not null, 
     base64_image LONGBLOB
 );
 
 create table if not exists student_course
 (
-    student_id varchar(16) not null, 
+    student_id int not null, 
     course_id varchar(16) not null
 );
 
@@ -30,7 +30,7 @@ create table if not exists courses
 
 create table if not exists attendance
 (
-    attendance_id varchar(16) not null, 
+    attendance_id int not null, 
     course_id varchar(16) not null,
     timeLimit datetime not null
 );
@@ -38,14 +38,12 @@ create table if not exists attendance
 
 create table if not exists student_attendance
 (
-    student_id varchar(16) not null,
-    attendance_id varchar(16) not null
+    student_id int not null,
+    attendance_id int not null
 );
 
 
 -- tao khoa chinh cho cac bang
-alter table student_image
-	add constraint primary key (image_id);
     
 alter table students
 	add constraint primary key (id); 
@@ -65,24 +63,19 @@ alter table student_attendance
 
 -- tao khoa ngoai cho cac bang
 alter table student_image
-	add constraint foreign key(student_id) references students(id);
+	add constraint foreign key(student_id) references students(id) on delete cascade;
 
 alter table student_course 
-	add constraint foreign key(student_id) references students(id);
+	add constraint foreign key(student_id) references students(id) on delete cascade;
 
 alter table student_course
-	add constraint foreign key(course_id) references courses(course_id);
-    
+	add constraint foreign key(course_id) references courses(course_id) on delete cascade;
+
 alter table attendance
-	add constraint foreign key(course_id) references courses(course_id);
-    
+	add constraint foreign key(course_id) references courses(course_id) on delete cascade;
+
 alter table student_attendance 
-	add constraint foreign key(student_id) references students(id);
+	add constraint foreign key(student_id) references students(id) on delete cascade;
+
 alter table student_attendance
-	add constraint foreign key(attendance_id) references attendance(attendance_id)
-
-
-
-insert into students (id, name) values
-('23023026', 'Lam Duc Anh'),
-('23020001', 'Nguyen Van A');
+	add constraint foreign key(attendance_id) references attendance(attendance_id) on delete cascade;

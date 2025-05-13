@@ -43,6 +43,7 @@ async def update_student(student_id: int, student: StudentUpdateRequestEntity):
     """
     Cập nhật thông tin sinh viên theo ID
     """
+    result = StudentService.update_student(student_id, student)
     return {"message": f"Update student with ID {student_id}", "student": student}
 
 @router.delete("/{student_id}")
@@ -50,6 +51,7 @@ async def delete_student(student_id: int):
     """
     Xóa sinh viên theo ID
     """
+    result = StudentService.delete_student(student_id)
     return {"message": f"Delete student with ID {student_id}"}
 
 @router.post("/{student_image}")
