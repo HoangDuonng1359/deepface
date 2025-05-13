@@ -44,11 +44,25 @@ class StudentService:
 
     @staticmethod
     def update_student(student_id: int, student: StudentUpdateRequestEntity):
-        pass
+        """
+        Cập nhật thông tin sinh viên theo ID
+        """
+        sql = "UPDATE students SET name = %s WHERE id = %s"
+        params = (student.name, student_id)
+        db.query_set(sql, params)
+
+        return {"message": "Update student", "studentId": student_id}
 
     @staticmethod
     def delete_student(student_id: int):
-        pass
+        """
+        Xóa sinh viên theo ID
+        """
+        sql = "DELETE FROM students WHERE id = %s"
+        params = (student_id,)
+        db.query_set(sql, params)
+
+        return {"message": "Delete student", "studentId": student_id}
 
 
     @staticmethod
