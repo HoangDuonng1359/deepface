@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/attendance", tags=["attendance"])
 @router.post("/")
 async def create_attendance(attendance: AttendanceCreateRequestEntity):
     """
-    Tạo điểm danh
+    Tạo ca điểm danh mới, và trả về thông tin ca điểm danh đã tạo
     """
     attendance = AttendanceService.create_attendance(attendance)
     return ResponseEntity(
@@ -24,7 +24,7 @@ async def create_attendance(attendance: AttendanceCreateRequestEntity):
 @router.get("/{attendance_id}")
 async def get_attendance(attendance_id: int):
     """
-    Lấy thông tin điểm danh theo ID
+    Lấy thông tin ca điểm danh theo ID
     """
     attendance = AttendanceService.get_attendance_by_id(attendance_id)
     if attendance is None:

@@ -11,5 +11,9 @@ class AttendanceService:
         pass
 
     @staticmethod
-    def check_attendance():
+    def check_attendance(attendance_id: int, image: str):
+        """
+            Khi biết một ca điểm danh và bức ảnh được gửi lên, hãy nhận diện và trả về danh tính sinh viên.
+        """
         pass
+        

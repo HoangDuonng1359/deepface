@@ -72,20 +72,4 @@ class StudentService:
         db.query_set(sql, params)
 
         return {"message": "Delete student", "studentId": student_id}
-
-
-    @staticmethod
-    def insert_image_student(image: StudentImageEntity):
-        """
-        Chèn hình ảnh sinh viên vào cơ sở dữ liệu
-        """
-
-        with open(image.base64_image, "rb") as image_file:
-            encoded_bytes = base64.b64encode(image_file.read())
-            image.base64_image = encoded_bytes.decode('utf-8')
-        sql = "INSERT INTO student_image (image_id, student_id, image) VALUES (%s, %s, %s)"
-        params = (image.image_id, image.student_id, image.base64_image)
-        db.query_set(sql, params)
-
-        return {"message": "Insert image student"}
     

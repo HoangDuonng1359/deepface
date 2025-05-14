@@ -45,10 +45,11 @@ class DatabaseConnector:
                 result = cursor.fetchall()
             return result
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database error: " + str(e),
-            )
+            # raise HTTPException(
+            #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            #     detail="Database error: " + str(e),
+            # )
+            return None
         
     def query_set(self, sql, param):
         try:
@@ -59,7 +60,8 @@ class DatabaseConnector:
                     connection.commit()
                     return cursor.lastrowid
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database error: " + str(e),
-            )
+            # raise HTTPException(
+            #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            #     detail="Database error: " + str(e),
+            # )
+            return None
