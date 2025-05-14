@@ -18,7 +18,7 @@ async def get_all_students() -> ResponseEntity:
     
     all_students = StudentService.get_all_students()
     return ResponseEntity(
-        result=1,
+        success=True,
         message="Lấy danh sách sinh viên thành công",
         data=all_students
     )
@@ -29,17 +29,16 @@ async def get_student(student_id: int) -> ResponseEntity:
     """
     Lấy thông tin sinh viên theo ID
     """
-    output = StudentService.get_student_by_id(student_id)
-    if output is None:
+    student = StudentService.get_student_by_id(student_id)
+    if student is None:
         return ResponseEntity(
-            result=0,
-            message="Không có sinh viên nào với ID này",
+            success=False,
+            message="Sinh viên không tồn tại",
             data=None
         )
-
-    student = StudentEntity(**output)
+    
     return ResponseEntity(
-        result=1,
+        success=True,
         message="Lấy thông tin sinh viên thành công",
         data=student
     )
@@ -50,8 +49,21 @@ async def create_student(student: StudentCreateRequestEntity):
     """
     Tạo sinh viên mới
     """
-    result = StudentService.create_student(student)
-    return result
+
+    student = StudentService.get_student_by_id(student.student_id)
+    if student is not None:
+        return ResponseEntity(
+            success=False,
+            message="Sinh viên đã tồn tại",
+            data=student
+        )
+
+    student = StudentService.create_student(student)
+    return ResponseEntity(
+        success=True,
+        message="Tạo sinh viên thành công",
+        data=student
+    )
 
 
 @router.put("/{student_id}")
@@ -59,8 +71,15 @@ async def update_student(student_id: int, student: StudentUpdateRequestEntity):
     """
     Cập nhật thông tin sinh viên theo ID
     """
-    result = StudentService.update_student(student_id, student)
-    return {"message": f"Update student with ID {student_id}", "student": student}
+    StudentService.update_student(student_id, student)
+    student = StudentService.get_student_by_id(student_id)
+    
+    return ResponseEntity(
+        success=True,
+        message="Cập nhật thông tin sinh viên thành công",
+        data=student
+    )
+    
 
 
 @router.delete("/{student_id}")
@@ -68,5 +87,18 @@ async def delete_student(student_id: int):
     """
     Xóa sinh viên theo ID
     """
-    result = StudentService.delete_student(student_id)
-    return {"message": f"Delete student with ID {student_id}"}
+    StudentService.delete_student(student_id)
+    student = StudentService.get_student_by_id(student_id)
+    
+    if student is not None:
+        return ResponseEntity(
+            success=False,
+            message="Xóa sinh viên không thành công",
+            data=student
+        )
+    
+    return ResponseEntity(
+        success=True,
+        message="Xóa sinh viên thành công",
+        data=None
+    )
