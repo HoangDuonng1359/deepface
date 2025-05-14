@@ -13,6 +13,9 @@ class StudentService:
     def get_all_students():
         """
         Lấy danh sách tất cả sinh viên
+
+        Returns:
+            list: Danh sách sinh viên
         """
 
         sql = "SELECT * FROM students"
@@ -25,7 +28,12 @@ class StudentService:
     def get_student_by_id(student_id: int):
         """
         Lấy thông tin sinh viên theo ID
+        Args:
+            student_id (int): ID của sinh viên
+        Returns:
+            dict: Thông tin sinh viên | None nếu không tìm thấy
         """
+
         sql = "SELECT * FROM students WHERE id = %s"
         params = (student_id,)
         student = db.query_get(sql, params)
@@ -37,6 +45,7 @@ class StudentService:
         """
         Tạo sinh viên mới
         """
+        
         sql = "INSERT INTO students (id, name) VALUES (%s, %s)"
         params = (student.id, student.name)
         student_id = db.query_set(sql, params)
