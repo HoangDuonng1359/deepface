@@ -2,12 +2,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from entities.CourseEntity import (
-    CourseEntity, 
     CourseCreateRequestEntity, 
     CourseUpdateRequestEntity 
 )
 
-from entities.ResponseEntity import ResponseEntity
 from services.CourseService import CourseService
 
 router = APIRouter(prefix="/api/courses", tags=["courses"])

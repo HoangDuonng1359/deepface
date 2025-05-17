@@ -1,10 +1,8 @@
 from fastapi import APIRouter
 from entities.AttendanceEntity import (
-    AttendanceEntity, 
     AttendanceCreateRequestEntity, 
     AttendanceUpdateRequestEntity 
 )
-from entities.ResponseEntity import ResponseEntity
 from services.AttendanceService import AttendanceService
 
 router = APIRouter(prefix="/api/attendance", tags=["attendance"])
