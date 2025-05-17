@@ -17,8 +17,7 @@ class CourseService:
         sql = "SELECT * FROM courses"
         params = ()
         all_courses = db.query_get(sql, params)
-        if all_courses is None:
-            return "Không có lớp học nào"
+        
         return all_courses
 
     @staticmethod
@@ -28,24 +27,38 @@ class CourseService:
         """
         sql = "SELECT * FROM courses WHERE course_id = %s"
         params = (course_id,)
-        course = db.query_get(sql, params)
-
-        if course is None:
-            return {
-                "result": 0,
-                "message": "Không có lớp học nào với ID này",
-            }
+        course = db.query_get(sql, params, limit=1)
         return course
+    
+    @staticmethod
+    def get_students_by_course_id(course_id: str):
+        """
+        Lấy danh sách sinh viên theo ID lớp học
+        """
+        sql = """
+        SELECT students.student_id, students.student_name
+        """
+        params = (course_id,)
+        students = db.query_get(sql, params)
+        return students
 
     @staticmethod
-    def create_course(course: CourseCreateRequestEntity):
+    def create_course(course_id: str, course_name: str, teacher_name: str, students: list[str]):
         """
         Tạo lớp học mới
         """
+
+        # Tạo lớp học mới
         sql = "INSERT INTO courses (course_id, course_name, teacher_name) VALUES (%s, %s, %s)"
-        params = (course.course_id, course.course_name, course.teacher_name)
-        course_id = db.query_set(sql, params)
-        return {"message": "Create a new course", "courseId": course_id}
+        params = (course_id, course_name, teacher_name)
+        db.query_set(sql, params)
+
+        # Thêm sinh viên vào lớp học
+        sql = "INSERT INTO student_course (course_id, student_id) VALUES (%s, %s)"
+        for student_id in students:
+            params = (course_id, student_id)
+            db.query_set(sql, params)
+
 
     @staticmethod
     def update_course(course_id: str, course: CourseUpdateRequestEntity):
@@ -56,7 +69,16 @@ class CourseService:
         params = (course.course_name, course.teacher_name, course_id)
         db.query_set(sql, params)
 
-        return {"message": "Update course successfully", "courseId": course_id}
+        # Xóa sinh viên cũ
+        sql = "DELETE FROM student_course WHERE course_id = %s"
+        params = (course_id,)
+        db.query_set(sql, params)
+
+        # Thêm sinh viên mới
+        sql = "INSERT INTO student_course (course_id, student_id) VALUES (%s, %s)"
+        for student_id in course.students:
+            params = (course_id, student_id)
+            db.query_set(sql, params)
 
 
     @staticmethod
@@ -64,7 +86,12 @@ class CourseService:
         """
         Xóa lớp học theo ID
         """
+        # Xóa sinh viên trong lớp học
+        sql = "DELETE FROM student_course WHERE course_id = %s"
+        params = (course_id,)
+        db.query_set(sql, params)
+
+        # Xóa lớp học
         sql = "DELETE FROM courses WHERE course_id = %s"
         params = (course_id,)
         db.query_set(sql, params)
-        return {"message": f"Delete course with ID {course_id}"}

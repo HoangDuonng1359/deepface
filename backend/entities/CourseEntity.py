@@ -6,11 +6,12 @@ class CourseEntity(BaseModel):
     teacher: str
 
 class CourseCreateRequestEntity(BaseModel):
-    id : str = Field(..., example="INT2008_1")
-    name : str = Field(..., example="Công nghệ phần mềm")
-    teacher: str = Field(..., example="Phạm Ngọc Hùng")
+    course_id : str = Field(..., example="INT2008_1")
+    course_name : str = Field(..., example="Công nghệ phần mềm")
+    teacher_name: str = Field(..., example="Phạm Ngọc Hùng")
+    students: list[str] = Field(..., example=["23020001", "23020015", "23020326"])
 
 class CourseUpdateRequestEntity(BaseModel):
-    name : str = Field(..., example="Công nghệ phần mềm")
-    teacher: str = Field(..., example="Nguyễn Đức Anh")
-
+    course_name : str = Field(..., example="Công nghệ phần mềm")
+    teacher_name: str = Field(..., example="Nguyễn Đức Anh")
+    students: list[str] = Field(..., example=["23020001", "23020015", "23020326"])

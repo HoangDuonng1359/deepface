@@ -77,3 +77,25 @@ alter table student_course
 alter table student_image
     add constraint student_image_students_student_id_fk
         foreign key (student_id) references students (student_id);
+
+
+
+insert into courses (course_id, course_name, teacher_name) values
+('INT3405-1', 'Học máy', 'Hoàng Thanh Tùng'),
+('AIT3005-2', 'Seminar khoa học', 'Nguyễn Việt Hà'),
+('INT2211-37', 'Cơ sở dữ liệu', 'Trần Hồng Việt'),
+('MAT1041-1', 'Giải tích I', 'Trần Thị Thu Hà');
+
+insert into students (student_id, student_name) values
+('23020001', 'Nguyễn Văn A'),
+('23020002', 'Nguyễn Văn B'),
+('23020003', 'Nguyễn Văn C'),
+('23020004', 'Nguyễn Văn D');
+
+insert into student_course (student_id, course_id) values
+('23020001', 'INT3405-1'),
+('23020001', 'AIT3005-2'),
+('23020002', 'INT3405-1'),
+('23020002', 'INT2211-37'),
+('23020003', 'MAT1041-1'),
+('23020004', 'INT3405-1');
