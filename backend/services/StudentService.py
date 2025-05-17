@@ -1,9 +1,4 @@
 from drivers.DatabaseDriver import DatabaseConnector
-from entities.StudentEntity import (
-    StudentEntity,
-    StudentCreateRequestEntity,
-    StudentUpdateRequestEntity,
-)
 
 db = DatabaseConnector()
 
