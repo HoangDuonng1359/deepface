@@ -78,7 +78,7 @@ async def create_course(new_course: CourseCreateRequestEntity):
     }
 
 @router.put("/{course_id}")
-async def update_course(course_id: str, course: CourseUpdateRequestEntity):
+async def update_course(course_id: str, new_course: CourseUpdateRequestEntity):
     """
     Cập nhật thông tin lớp học theo ID
     """
@@ -90,7 +90,12 @@ async def update_course(course_id: str, course: CourseUpdateRequestEntity):
             "data": None
         }
 
-    CourseService.update_course(course_id, course)
+    CourseService.update_course(
+        course_id,
+        new_course.course_name,
+        new_course.teacher_name,
+        new_course.students
+    )
     course = CourseService.get_course_by_id(course_id)
     return {
         "success": True,
