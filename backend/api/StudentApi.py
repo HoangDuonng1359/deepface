@@ -55,7 +55,7 @@ async def create_student(new_student: StudentCreateRequestEntity):
             "data": student
         }
 
-    student = StudentService.create_student(
+    StudentService.create_student(
         new_student.student_id,
         new_student.student_name,
         new_student.images
@@ -64,19 +64,28 @@ async def create_student(new_student: StudentCreateRequestEntity):
     return {
         "success": True,
         "message": "Tạo sinh viên thành công",
-        "data": student
+        "data": StudentService.get_student_by_id(new_student.student_id)
     }
 
 
 @router.put("/{student_id}")
-async def update_student(student_id: int, student: StudentUpdateRequestEntity):
+async def update_student(student_id: int, update_student: StudentUpdateRequestEntity):
     """
     Cập nhật thông tin sinh viên theo ID
     """
+
+    student = StudentService.get_student_by_id(student_id)
+    if student is None:
+        return {
+            "success": False,
+            "message": "Sinh viên không tồn tại",
+            "data": None
+        }
+
     StudentService.update_student(
         student_id, 
-        student.student_name, 
-        student.images
+        update_student.student_name, 
+        update_student.images
     )
     
     return {
@@ -92,6 +101,15 @@ async def delete_student(student_id: int):
     """
     Xóa sinh viên theo ID
     """
+
+    student = StudentService.get_student_by_id(student_id)
+    if student is None:
+        return {
+            "success": False,
+            "message": "Sinh viên không tồn tại",
+            "data": None
+        }
+    
     StudentService.delete_student(student_id)
     student = StudentService.get_student_by_id(student_id)
     
