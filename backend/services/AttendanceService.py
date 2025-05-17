@@ -3,12 +3,45 @@ from drivers.DatabaseDriver import DatabaseConnector
 class AttendanceService:
 
     @staticmethod
-    def create_attendance():
+    def create_attendance(course_id: str):
+        """
+        Tạo ca điểm danh mới
+
+        Parameters:
+
+        Returns:
+            attendance_id: ID của ca điểm danh mới được tạo
+
+        """
         pass
 
     @staticmethod
     def get_attendance_by_id(attendance_id: int):
-        pass
+        return {
+            "id" : 123,
+            "course_id" : "INT2008-2",
+            "course_name" : "Công nghệ phần mềm",
+            "teacher_name" : "Nguyễn Đức Anh",
+            "start" : "2023-10-01 08:00:00",
+            "end" : "2023-10-01 09:00:00",
+            "students" : [
+                {
+                    "student_id" : "23020001",
+                    "student_name" : "Nguyễn Văn A",
+                    "status" : "Đúng giờ"
+                },
+                {
+                    "student_id" : "23020002",
+                    "student_name" : "Nguyễn Văn B",
+                    "status" : "Muộn"
+                },
+                {
+                    "student_id" : "23020003",
+                    "student_name" : "Nguyễn Văn C",
+                    "status" : "Vắng"
+                }
+            ]
+        }
 
     @staticmethod
     def check_attendance(attendance_id: int, image: str):

@@ -35,8 +35,9 @@ class CourseService:
         """
         Lấy danh sách sinh viên theo ID lớp học
         """
+        
         sql = """
-        SELECT students.student_id, students.student_name
+            Điền lệnh SQL vào đây
         """
         params = (course_id,)
         students = db.query_get(sql, params)
@@ -61,25 +62,20 @@ class CourseService:
 
 
     @staticmethod
-    def update_course(course_id: str, course: CourseUpdateRequestEntity):
+    def update_course(course_id: str, course_name: str, teacher_name: str, students: list[str]):
         """
         Cập nhật thông tin lớp học theo ID
         """
-        sql = "UPDATE courses SET course_name = %s, teacher_name = %s WHERE course_id = %s"
-        params = (course.course_name, course.teacher_name, course_id)
-        db.query_set(sql, params)
+        
+        # Cập nhật thông tin course
+    
 
-        # Xóa sinh viên cũ
-        sql = "DELETE FROM student_course WHERE course_id = %s"
-        params = (course_id,)
-        db.query_set(sql, params)
-
-        # Thêm sinh viên mới
-        sql = "INSERT INTO student_course (course_id, student_id) VALUES (%s, %s)"
-        for student_id in course.students:
-            params = (course_id, student_id)
-            db.query_set(sql, params)
-
+        # Xóa danh sách sinh viên cũ
+        
+        
+        # Thêm danh sách viên đã cập nhật
+        
+        
 
     @staticmethod
     def delete_course(course_id: str):

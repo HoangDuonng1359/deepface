@@ -13,9 +13,6 @@ class StudentService:
     def get_all_students():
         """
         Lấy danh sách tất cả sinh viên
-
-        Returns:
-            list: Danh sách sinh viên
         """
 
         sql = "SELECT * FROM students"
@@ -28,10 +25,6 @@ class StudentService:
     def get_student_by_id(student_id: int):
         """
         Lấy thông tin sinh viên theo ID
-        Args:
-            student_id (int): ID của sinh viên
-        Returns:
-            dict: Thông tin sinh viên | None nếu không tìm thấy
         """
 
         sql = "SELECT * FROM students WHERE id = %s"
@@ -41,35 +34,24 @@ class StudentService:
         return student
 
     @staticmethod
-    def create_student(student: StudentCreateRequestEntity):
+    def create_student(student_id: str, student_name: str, images: list[str]):
         """
         Tạo sinh viên mới
         """
-        
-        sql = "INSERT INTO students (id, name) VALUES (%s, %s)"
-        params = (student.id, student.name)
-        student_id = db.query_set(sql, params)
-        return {"message": "Create a new student", "studentId": student_id}
+    
+        pass
 
     @staticmethod
-    def update_student(student_id: int, student: StudentUpdateRequestEntity):
+    def update_student(student_id: str, student_name: str, images: list[str]):
         """
         Cập nhật thông tin sinh viên theo ID
         """
-        sql = "UPDATE students SET name = %s WHERE id = %s"
-        params = (student.name, student_id)
-        db.query_set(sql, params)
-
-        return {"message": "Update student", "studentId": student_id}
+        pass
 
     @staticmethod
     def delete_student(student_id: int):
         """
         Xóa sinh viên theo ID
         """
-        sql = "DELETE FROM students WHERE id = %s"
-        params = (student_id,)
-        db.query_set(sql, params)
-
-        return {"message": "Delete student", "studentId": student_id}
+        pass
     
