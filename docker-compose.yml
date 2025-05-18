@@ -17,6 +17,18 @@ services:
   #   depends_on:
   #     - model
   #     - database
+  database:
+    container_name: database
+    platform: linux/x86_64
+    build: ./database
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./database/data:/docker-entrypoint-initdb.d
+      - ./database/cnf:/etc/database/cnf
+    env_file:
+      - ./database/local.env
+    tty: true
   backend:
     container_name: backend
     platform: linux/x86_64
@@ -33,15 +45,4 @@ services:
       - ./backend/local.env
     depends_on:
       - database
-  database:
-    container_name: database
-    platform: linux/x86_64
-    build: ./database
-    ports:
-      - "3307:3306"
-    volumes:
-      - ./database/data:/docker-entrypoint-initdb.d
-      - ./database/cnf:/etc/database/cnf
-    env_file:
-      - ./database/local.env
-    tty: true
+  
