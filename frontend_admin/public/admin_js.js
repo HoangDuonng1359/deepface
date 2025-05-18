@@ -199,32 +199,11 @@ window.addEventListener("click", function (event) {
 function addStudentRow() {
     const tbody = document.getElementById('add-class-student-table');
     const row = document.createElement('tr');
+
     row.innerHTML = `
         <td><input type="text" class="standard-input" placeholder="MSSV" /></td>
-        <td><input type="text" class="standard-input" placeholder="Họ và tên" /></td>
+        <td></td>
         <td style="text-align: center;">
-            <button class="icon-btn icon-btn-danger" onclick="removeRow(this)" title="Xoá">
-                <i data-feather="trash-2"></i>
-            </button>
-        </td>
-    `;
-    tbody.appendChild(row);
-    feather.replace();  // cập nhật icon mới sau khi thêm dòng
-}
-
-function removeRow(button) {
-    const row = button.closest('tr');
-    if (row) row.remove();
-}
-
-function addStudentRowToEditClass() {
-    const tbody = document.getElementById('edit-class-student-body'); // ✅ đúng tbody trong modal
-
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td><input type="text" class="standard-input" placeholder="MSSV" /></td>
-        <td><input type="text" class="standard-input" placeholder="Họ và tên" /></td>
-        <td class="action-cell" style="display: flex; align-items: center; gap: 8px;">
             <button class="icon-btn" onclick="confirmRow(this)" title="Lưu">
                 <i data-feather="check"></i>
             </button>
@@ -237,32 +216,69 @@ function addStudentRowToEditClass() {
     feather.replace();
 }
 
-
-function confirmRow(button) {
+function removeRow(button) {
     const row = button.closest('tr');
-    const inputs = row.querySelectorAll('input');
+    if (row) row.remove();
+}
 
-    const mssv = inputs[0].value.trim();
-    const name = inputs[1].value.trim();
-
-    if (!mssv || !name) {
-        alert("Vui lòng nhập đầy đủ thông tin!");
-        return;
-    }
+function addStudentRowToEditClass() {
+    const tbody = document.getElementById('edit-class-student-body');
+    const row = document.createElement('tr');
 
     row.innerHTML = `
-        <td>${mssv}</td>
-        <td>${name}</td>
-        <td class="action-cell">
+        <td><input type="text" class="standard-input" placeholder="MSSV" /></td>
+        <td></td>
+        <td class="action-cell" style="display: flex; align-items: center; gap: 8px;">
+            <button class="icon-btn" onclick="confirmRow(this)" title="Lưu">
+                <i data-feather="check"></i>
+            </button>
             <button class="icon-btn icon-btn-danger" onclick="removeRow(this)" title="Xoá">
                 <i data-feather="trash-2"></i>
             </button>
         </td>
     `;
+
+    tbody.appendChild(row);
     feather.replace();
 }
 
+async function confirmRow(button) {
+    const row = button.closest('tr');
+    const input = row.querySelector('input');
+    const mssv = input.value.trim();
 
+    if (!mssv) {
+        alert("Vui lòng nhập MSSV!");
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:8000/api/students/${mssv}`);
+        const result = await res.json();
+
+        if (!result.success || !result.data) {
+            alert("Không tìm thấy sinh viên với MSSV này.");
+            return;
+        }
+
+        const name = result.data.student_name || '';
+
+        row.innerHTML = `
+            <td>${mssv}</td>
+            <td>${name}</td>
+            <td class="action-cell">
+                <button class="icon-btn icon-btn-danger" onclick="removeRow(this)" title="Xoá">
+                    <i data-feather="trash-2"></i>
+                </button>
+            </td>
+        `;
+
+        feather.replace();
+    } catch (err) {
+        console.error("Lỗi khi tìm sinh viên:", err);
+        alert("Không thể kết nối tới máy chủ.");
+    }
+}
 
 function editRow(button) {
     const row = button.closest('tr');
