@@ -3,47 +3,49 @@ import pymysql.cursors
 from pymysql import converters
 from fastapi import HTTPException, status
 
-
-DATABASE_HOST = "database" #os.getenv("DATABASE_HOST")
-DATABASE_PORT = int(os.getenv("DATABASE_PORT"))
-DATABASE = os.getenv("DATABASE")
-DATABASE_USER = "root"
-DATABASE_PASSWORD = "123456"
-conversions = converters.conversions
-conversions[pymysql.FIELD_TYPE.BIT] = (
-    lambda x: False if x == b"\x00" else True
-)
-
 class DatabaseConnector:
     def __init__(self):
-        self.connection = pymysql.connect(
-            host=DATABASE_HOST,
-            port=DATABASE_PORT,
-            user=DATABASE_USER,
-            password=DATABASE_PASSWORD,
-            database=DATABASE,
-            charset="utf8",
-            cursorclass=pymysql.cursors.DictCursor,
-            conv=conversions,
+        self.host = os.getenv("DATABASE_HOST")
+        self.user = os.getenv("DATABASE_USER")
+        self.password = os.getenv("DATABASE_PASSWORD")
+        self.database = os.getenv("DATABASE")
+        self.port = int(os.getenv("DATABASE_PORT"))
+        self.conversions = converters.conversions
+        self.conversions[pymysql.FIELD_TYPE.BIT] = (
+            lambda x: False if x == b"\x00" else True
         )
     
-    def query_get(self, sql: str, params: tuple, limit: int = None) -> list:
+    def get_connection(self):
+        connection = pymysql.connect(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            database=self.database,
+            conv=self.conversions,
+            charset="utf8",
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        return connection
+
+    def query_get(self, sql: str, params: tuple, limit: int = None):
         """
         Truy vấn tất cả dữ liệu từ cơ sở dữ liệu
         """
         
         try:
-            with self.connection.cursor() as cursor:
-                cursor.execute(sql, params)
-                
-                if limit is None:
-                    result = cursor.fetchall()
-                elif limit == 1:
-                    result = cursor.fetchone()
-                else:
-                    result = cursor.fetchmany(limit)
-                
-                return result
+            connection = self.get_connection()
+            with connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(sql, params)
+                    if limit is None:
+                        result = cursor.fetchall()
+                    elif limit == 1:
+                        result = cursor.fetchone()
+                    else:
+                        result = cursor.fetchmany(limit)
+                    return result
+        
         except pymysql.MySQLError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -53,17 +55,16 @@ class DatabaseConnector:
     def query_set(self, sql: str, params: tuple):
         
         try:
-            with self.connection.cursor() as cursor:
-                cursor.execute(sql, params)
-                self.connection.commit()
-                return cursor.lastrowid
+            connection = self.get_connection()
+            with connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(sql, params)
+                    connection.commit()
+                    return cursor.lastrowid
         
         except pymysql.MySQLError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Lỗi database: {e}",
             )
-
-
-
     
