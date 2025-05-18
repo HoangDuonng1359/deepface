@@ -54,7 +54,7 @@ create table if not exists student_image
 (
     image_id        int auto_increment  primary key,
     student_id      varchar(16) not null,
-    base64_image    text        not null
+    base64_image    longtext        not null
 );
 
 create table if not exists students
