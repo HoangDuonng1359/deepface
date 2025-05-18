@@ -6,8 +6,8 @@ from fastapi import HTTPException, status
 class DatabaseConnector:
     def __init__(self):
         self.host = os.getenv("DATABASE_HOST")
-        self.user = os.getenv("DATABASE_USER")
-        self.password = os.getenv("DATABASE_PASSWORD")
+        self.user = "root"
+        self.password = "123456"
         self.database = os.getenv("DATABASE")
         self.port = int(os.getenv("DATABASE_PORT"))
         self.conversions = converters.conversions
