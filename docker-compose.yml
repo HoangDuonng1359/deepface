@@ -9,14 +9,14 @@ services:
   #   depends_on:
   #     - model
   #     - database
-  # frontend_admin:
-  #   build:
-  #     context: ./frontend_admin
-  #   ports:
-  #     - "8081:8081"
-  #   depends_on:
-  #     - model
-  #     - database
+  frontend_admin:
+    build:
+      context: ./frontend_admin
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+      - database
   backend:
     container_name: backend
     platform: linux/x86_64
