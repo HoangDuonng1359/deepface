@@ -1,5 +1,7 @@
 from drivers.DatabaseDriver import DatabaseConnector
 
+db = DatabaseConnector()
+
 class AttendanceService:
 
     @staticmethod
@@ -11,9 +13,12 @@ class AttendanceService:
 
         Returns:
             attendance_id: ID của ca điểm danh mới được tạo
-
         """
-        pass
+        sql = "INSERT INTO attendances (course_id) VALUES (%s)"
+        params = (course_id,)
+        attendance_id = db.query_set(sql, params)
+        return attendance_id
+        
 
     @staticmethod
     def get_attendance_by_id(attendance_id: int):

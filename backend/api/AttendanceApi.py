@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from entities.AttendanceEntity import (
     AttendanceCreateRequestEntity, 
-    AttendanceUpdateRequestEntity 
+    AttendanceCheckRequestEntity 
 )
 from services.AttendanceService import AttendanceService
 
@@ -32,37 +32,17 @@ async def get_attendance(attendance_id: int):
     """
     Lấy thông tin ca điểm danh theo ID
     """
-    return {
-        "attendance_id" : attendance_id,
-        "course_id" : "INT2008-2",
-        "course_name" : "Công nghệ phần mềm",
-        "teacher_name" : "Nguyễn Đức Anh",
-        "start" : "2023-10-01 08:00:00",
-        "end" : "2023-10-01 09:00:00",
-        "students" : [
-            {
-                "student_id" : "23020001",
-                "student_name" : "Nguyễn Văn A",
-                "status" : "Đúng giờ"
-            },
-            {
-                "student_id" : "23020002",
-                "student_name" : "Nguyễn Văn B",
-                "status" : "Muộn"
-            },
-            {
-                "student_id" : "23020003",
-                "student_name" : "Nguyễn Văn C",
-                "status" : "Vắng"
-            }
-        ]
-    }
+    pass
 
 @router.put("/{attendance_id}")
-async def check_attendance(attendance_id: int):
+async def check_attendance(attendance_id: int, request: AttendanceCheckRequestEntity):
     """
     Gửi một yêu cầu điểm danh
     """
+
+    # Thực hiện điểm danh bằng hình ảnh
+    result = AttendanceService.check_attendance(attendance_id, request.image)
+
     return {
         "success" : True,
         "message" : "Điểm danh thành công",

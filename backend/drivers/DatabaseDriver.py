@@ -51,6 +51,7 @@ class DatabaseConnector:
             with self.connection.cursor() as cursor:
                 cursor.execute(sql, params)
                 self.connection.commit()
+                return cursor.lastrowid
         
         except pymysql.MySQLError as e:
             raise HTTPException(
