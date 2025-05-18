@@ -1,5 +1,5 @@
-FROM mysql:8.2.0
+FROM mysql:latest
 
-EXPOSE 3306
+EXPOSE 3307
 
 CMD ["mysqld"]

@@ -1,14 +1,18 @@
 import os
 import pymysql.cursors
-# from pymysql import converters
+from pymysql import converters
 from fastapi import HTTPException, status
 
 
-DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_HOST = "database" #os.getenv("DATABASE_HOST")
 DATABASE_PORT = int(os.getenv("DATABASE_PORT"))
 DATABASE = os.getenv("DATABASE")
 DATABASE_USER = "root"
 DATABASE_PASSWORD = "123456"
+conversions = converters.conversions
+conversions[pymysql.FIELD_TYPE.BIT] = (
+    lambda x: False if x == b"\x00" else True
+)
 
 class DatabaseConnector:
     def __init__(self):
@@ -18,8 +22,9 @@ class DatabaseConnector:
             user=DATABASE_USER,
             password=DATABASE_PASSWORD,
             database=DATABASE,
-            charset="utf8mb4",
+            charset="utf8",
             cursorclass=pymysql.cursors.DictCursor,
+            conv=conversions,
         )
     
     def query_get(self, sql: str, params: tuple, limit: int = None) -> list:
