@@ -32,35 +32,40 @@ class StudentService:
         
         # Lấy danh sách ảnh của sinh viên
         sql = """
-            SELECT i.base64_image
+            SELECT i.image
             FROM students s
             JOIN student_image i ON s.student_id = i.student_id
             WHERE s.student_id = %s
         """
         params = (student_id,)
         images = db.query_get(sql, params)
-        images = [image['base64_image'] for image in images]
+        images = [image['image'] for image in images]
         student['images'] = images
 
         return student
 
     @staticmethod
-    def create_student(student_id: str, student_name: str, images: list[str]):
+    def create_student(
+            student_id: str, 
+            student_name: str,
+            cohort: str,
+            images: list[str]
+        ):
         """
         Tạo sinh viên mới
         """
 
         # Tạo sinh viên mới trong bảng students
         sql = """
-            INSERT INTO students (student_id, student_name)
-            VALUES (%s, %s)
+            INSERT INTO students (student_id, student_name, cohort)
+            VALUES (%s, %s, %s)
         """
-        params = (student_id, student_name)
+        params = (student_id, student_name, cohort)
         db.query_set(sql, params)
 
         # Thêm ảnh vào bảng student_image
         sql = """
-            INSERT INTO student_image (student_id, base64_image) 
+            INSERT INTO student_image (student_id, image) 
             VALUES (%s, %s)
         """
         for image in images:
@@ -73,14 +78,19 @@ class StudentService:
         Thêm ảnh cho sinh viên
         """
         sql = """
-            INSERT INTO student_image (student_id, base64_image) 
+            INSERT INTO student_image (student_id, image) 
             VALUES (%s, %s)
         """
         params = (student_id, image)
         db.query_set(sql, params)
     
     @staticmethod
-    def update_student(student_id: str, student_name: str, images: list[str]):
+    def update_student(
+            student_id: str, 
+            student_name: str, 
+            cohort: str, 
+            images: list[str]
+        ):
         """
         Cập nhật thông tin sinh viên theo ID
         """
@@ -88,10 +98,10 @@ class StudentService:
         # Cập nhật thông tin sinh viên trong bảng students
         sql = """
             UPDATE students 
-            SET student_name = %s
+            SET student_name = %s, cohort = %s
             WHERE student_id = %s
         """
-        params = (student_name, student_id)
+        params = (student_name, cohort, student_id)
         db.query_set(sql, params)
 
         # Xóa danh sách ảnh cũ
@@ -104,7 +114,7 @@ class StudentService:
 
         # Thêm danh sách ảnh đã cập nhật
         sql = """
-            INSERT INTO student_image (student_id, base64_image) 
+            INSERT INTO student_image (student_id, image) 
             VALUES (%s, %s)
         """
         for image in images:

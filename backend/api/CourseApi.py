@@ -32,7 +32,7 @@ async def get_course(course_id: str):
     if course is None:
         return {
             "success": False,
-            "message": "Lớp học không tồn tại",
+            "message": f"Không tìm thấy lớp có mã {course_id}",
             "data": None
         }
 
@@ -41,6 +41,25 @@ async def get_course(course_id: str):
         "message": "Lấy thông tin lớp học thành công",
         "data": course
     }
+
+@router.get("/{course_id}/attendances")
+async def get_attendances_by_course_id(course_id: str):
+    """
+        Lấy lịch sử điểm danh của một lớp học
+    """
+    
+    return {
+        "success": True,
+        "message": "Lấy lịch sử điểm danh thành công",
+        "data": []
+    }
+
+@router.get("/{course_id}/students")
+async def get_students_by_course_id(course_id: str):
+    """
+    Lấy danh sách sinh viên trong một lớp học
+    """
+    pass
 
 @router.post("/")
 async def create_course(new_course: CourseCreateRequestEntity):
