@@ -1,7 +1,7 @@
 import React from 'react';
 import { List, Typography, Badge, Input } from 'antd';
 import { SearchOutlined, BookOutlined, ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { Course } from '../page/Dashboard';
+import { Course } from '../interface/Course';
 
 const { Title, Text } = Typography;
 
@@ -42,10 +42,10 @@ const CourseList: React.FC<CourseListProps> = ({ courses, selectedCourseId, onSe
 
   return (
     <div className="p-4 h-full flex flex-col">
-      <Title level={4} className="mb-4">Courses</Title>
+      <Title level={4} className="mb-4">Danh sách lớp học</Title>
       
       <Input 
-        placeholder="Search courses" 
+        placeholder="Tìm kiếm lớp học" 
         prefix={<SearchOutlined className="text-gray-400" />}
         className="mb-4" 
       />
@@ -55,18 +55,18 @@ const CourseList: React.FC<CourseListProps> = ({ courses, selectedCourseId, onSe
         dataSource={courses}
         renderItem={course => (
           <List.Item 
-            onClick={() => onSelectCourse(course.id)}
+            onClick={() => onSelectCourse(course.course_id)}
             className={`cursor-pointer rounded-lg mb-2 p-4 hover:bg-blue-50 transition-colors ${
-              selectedCourseId === course.id ? 'bg-blue-100 border-l-4 border-blue-600' : ''
+              selectedCourseId === course.course_id ? 'bg-blue-100 border-l-4 border-blue-600' : ''
             }`}
           >
             <div className="w-full">
               <div className="flex justify-between items-center mb-2 ml-2">
-                <Text strong className="text-lg">{course.title}</Text>
+                <Text strong className="text-lg">{course.course_name}</Text>
                 {getStatusIcon(course.status)}
               </div>
               <div className="flex justify-between items-center">
-                <Text type="secondary" className="text-sm truncate">{course.instructor}</Text>
+                <Text type="secondary" className="text-sm truncate">{course.teacher_name}</Text>
                 <Text className={`text-xs capitalize ${getStatusColor(course.status)}`}>
                   {course.status}
                 </Text>
