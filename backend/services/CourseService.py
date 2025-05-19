@@ -38,6 +38,7 @@ class CourseService:
         params = (course_id,)
         students = db.query_get(sql, params)
         course['students'] = students
+        course['num_students'] = len(students)
         
         return course
     
@@ -48,7 +49,10 @@ class CourseService:
         """
         
         sql = """
-            Điền lệnh SQL vào đây
+            SELECT s.student_id, s.student_name
+            FROM student_course sc
+            JOIN students s ON sc.student_id = s.student_id
+            WHERE sc.course_id = %s
         """
         params = (course_id,)
         students = db.query_get(sql, params)

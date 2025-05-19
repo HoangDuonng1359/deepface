@@ -31,7 +31,7 @@ async def get_student(student_id: int):
     if student is None:
         return {
             "success": False,
-            "message": "Sinh viên không tồn tại",
+            "message": f"Không tìm thấy sinh viên có mã {student_id}",
             "data": None
         }
 
@@ -58,6 +58,7 @@ async def create_student(new_student: StudentCreateRequestEntity):
     StudentService.create_student(
         new_student.student_id,
         new_student.student_name,
+        new_student.cohort,
         new_student.images
     )
 
@@ -83,8 +84,9 @@ async def update_student(student_id: int, update_student: StudentUpdateRequestEn
         }
 
     StudentService.update_student(
-        student_id, 
-        update_student.student_name, 
+        student_id,
+        update_student.student_name,
+        update_student.cohort,
         update_student.images
     )
     

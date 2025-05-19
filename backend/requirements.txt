@@ -3,3 +3,4 @@ uvicorn
 pymysql
 pydantic
 cryptography
+pytz
