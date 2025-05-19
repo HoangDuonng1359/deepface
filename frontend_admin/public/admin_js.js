@@ -7,16 +7,18 @@ function renderStudentRows(students) {
   students.forEach(s => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${s.student_id}</td>
-      <td>${s.student_name}</td>
-      <td class="action-column">
+    <td>${s.student_id}</td>
+    <td>${s.student_name}</td>
+    <td>${s.cohort || ""}</td>  <!-- ✅ THÊM DÒNG NÀY -->
+    <td class="action-column">
         <button class="icon-btn" onclick="editStudent('${s.student_id}')" title="Sửa">
             <i data-feather="edit-2"></i>
         </button>
         <button class="icon-btn icon-btn-danger" onclick="deleteStudent(this,'${s.student_id}')" title="Xóa">
             <i data-feather="trash-2"></i>
         </button>
-      </td>`;
+    </td>
+    `;
     row.addEventListener('click', e => {
       if (!e.target.closest('.action-column')) {
         showStudentDetailModal(s.student_id);
@@ -151,6 +153,7 @@ function closeClassDetail() {
 }
 
 async function showClassDetailModal(courseId) {
+    currentCourseId = courseId;
     try {
         const response = await fetch(`http://localhost:8000/api/courses/${courseId}`);
         const json = await response.json();
@@ -199,32 +202,11 @@ window.addEventListener("click", function (event) {
 function addStudentRow() {
     const tbody = document.getElementById('add-class-student-table');
     const row = document.createElement('tr');
+
     row.innerHTML = `
         <td><input type="text" class="standard-input" placeholder="MSSV" /></td>
-        <td><input type="text" class="standard-input" placeholder="Họ và tên" /></td>
+        <td></td>
         <td style="text-align: center;">
-            <button class="icon-btn icon-btn-danger" onclick="removeRow(this)" title="Xoá">
-                <i data-feather="trash-2"></i>
-            </button>
-        </td>
-    `;
-    tbody.appendChild(row);
-    feather.replace();  // cập nhật icon mới sau khi thêm dòng
-}
-
-function removeRow(button) {
-    const row = button.closest('tr');
-    if (row) row.remove();
-}
-
-function addStudentRowToEditClass() {
-    const tbody = document.getElementById('edit-class-student-body'); // ✅ đúng tbody trong modal
-
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td><input type="text" class="standard-input" placeholder="MSSV" /></td>
-        <td><input type="text" class="standard-input" placeholder="Họ và tên" /></td>
-        <td class="action-cell" style="display: flex; align-items: center; gap: 8px;">
             <button class="icon-btn" onclick="confirmRow(this)" title="Lưu">
                 <i data-feather="check"></i>
             </button>
@@ -237,32 +219,69 @@ function addStudentRowToEditClass() {
     feather.replace();
 }
 
-
-function confirmRow(button) {
+function removeRow(button) {
     const row = button.closest('tr');
-    const inputs = row.querySelectorAll('input');
+    if (row) row.remove();
+}
 
-    const mssv = inputs[0].value.trim();
-    const name = inputs[1].value.trim();
-
-    if (!mssv || !name) {
-        alert("Vui lòng nhập đầy đủ thông tin!");
-        return;
-    }
+function addStudentRowToEditClass() {
+    const tbody = document.getElementById('edit-class-student-body');
+    const row = document.createElement('tr');
 
     row.innerHTML = `
-        <td>${mssv}</td>
-        <td>${name}</td>
-        <td class="action-cell">
+        <td><input type="text" class="standard-input" placeholder="MSSV" /></td>
+        <td></td>
+        <td class="action-cell" style="display: flex; align-items: center; gap: 8px;">
+            <button class="icon-btn" onclick="confirmRow(this)" title="Lưu">
+                <i data-feather="check"></i>
+            </button>
             <button class="icon-btn icon-btn-danger" onclick="removeRow(this)" title="Xoá">
                 <i data-feather="trash-2"></i>
             </button>
         </td>
     `;
+
+    tbody.appendChild(row);
     feather.replace();
 }
 
+async function confirmRow(button) {
+    const row = button.closest('tr');
+    const input = row.querySelector('input');
+    const mssv = input.value.trim();
 
+    if (!mssv) {
+        alert("Vui lòng nhập MSSV!");
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:8000/api/students/${mssv}`);
+        const result = await res.json();
+
+        if (!result.success || !result.data) {
+            alert("Không tìm thấy sinh viên với MSSV này.");
+            return;
+        }
+
+        const name = result.data.student_name || '';
+
+        row.innerHTML = `
+            <td>${mssv}</td>
+            <td>${name}</td>
+            <td class="action-cell">
+                <button class="icon-btn icon-btn-danger" onclick="removeRow(this)" title="Xoá">
+                    <i data-feather="trash-2"></i>
+                </button>
+            </td>
+        `;
+
+        feather.replace();
+    } catch (err) {
+        console.error("Lỗi khi tìm sinh viên:", err);
+        alert("Không thể kết nối tới máy chủ.");
+    }
+}
 
 function editRow(button) {
     const row = button.closest('tr');
@@ -410,6 +429,7 @@ async function showStudentDetailModal(studentId) {
         // ✅ Gán dữ liệu vào modal
         document.getElementById("detail-student-id").innerText = student.student_id;
         document.getElementById("detail-student-name").innerText = student.student_name;
+        document.getElementById("detail-student-cohort").innerText = student.cohort || "";
 
         const imageContainer = document.getElementById("student-images");
         imageContainer.innerHTML = '';
@@ -674,6 +694,7 @@ async function editStudent(studentId) {
         // Gán dữ liệu vào modal
     document.getElementById("edit-mssv").value = student.student_id;
     document.getElementById("edit-name").value = student.student_name;
+    document.getElementById("edit-cohort").value = student.cohort || "";
 
         const container = document.getElementById("edit-photo-container");
         container.innerHTML = '';
@@ -745,6 +766,7 @@ function activateMenuItemByPageId(pageId) {
 async function saveStudentFromModal() {
     const studentId = document.getElementById("edit-mssv").value.trim();
     const studentName = document.getElementById("edit-name").value.trim();
+    const studentCohort = document.getElementById("edit-cohort").value.trim();
     const photoCards = document.querySelectorAll('#edit-photo-container .student-card img');
 
     if (!studentId || !studentName) {
@@ -763,10 +785,10 @@ async function saveStudentFromModal() {
 
     const payload = {
         student_name: studentName,
+        cohort: studentCohort, // ✅ THÊM DÒNG NÀY
         images: images
     };
-
-
+    
     try {
         const res = await fetch(`http://localhost:8000/api/students/${studentId}`, {
             method: 'PUT',
@@ -812,10 +834,11 @@ function closeAddStudentModal() {
 async function saveNewStudent() {
     const studentId = document.getElementById("add-mssv").value.trim(); // 👈 Giữ kiểu string
     const studentName = document.getElementById("add-name").value.trim();
+    const studentCohort = document.getElementById("add-cohort").value.trim();
     const photoCards = document.querySelectorAll('#add-photo-container .student-card img');
 
-    if (!studentId || !studentName) {
-        alert("Vui lòng nhập đầy đủ MSSV và họ tên.");
+    if (!studentId || !studentName || !studentCohort) {
+        alert("Vui lòng nhập đầy đủ MSSV, họ tên và niên khóa.");
         return;
     }
 
@@ -840,6 +863,7 @@ async function saveNewStudent() {
     const payload = {
         student_id: studentId, // 👈 string hợp lệ
         student_name: studentName,
+        cohort: studentCohort,
         images: images
     };
 
@@ -990,3 +1014,116 @@ window.addEventListener('DOMContentLoaded', () => {
     feather.replace(); // ✅ để icon hiển thị
     updateDashboard();
 });
+
+let currentCourseId = null;
+
+function openAttendanceHistory() {
+    if (!currentCourseId) {
+        alert("Không xác định được lớp học.");
+        return;
+    }
+
+    fetch(`http://localhost:8000/api/courses/${currentCourseId}/attendances`)
+        .then(res => res.json())
+        .then(json => {
+            if (!json.success || !Array.isArray(json.data)) {
+                alert("Không thể lấy lịch sử điểm danh.");
+                return;
+            }
+
+            const tbody = document.getElementById("attendance-history-body");
+            tbody.innerHTML = "";
+
+            json.data.forEach(att => {
+                const row = document.createElement("tr");
+                const punc = att.punctuality[0] || { early: 0, late: 0, absent: 0 };
+                row.innerHTML = `
+                    <td>${att.attendance_id}</td>
+                    <td>${att.start_time || "-"}</td>
+                    <td>${att.end_time || "-"}</td>
+                    <td>${punc.early || 0}</td>
+                    <td>${punc.late || 0}</td>
+                    <td>${punc.absent || 0}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById("attendance-history-modal").style.display = "flex";
+        })
+        .catch(err => {
+            console.error("Lỗi lấy lịch sử điểm danh:", err);
+            alert("Lỗi kết nối máy chủ.");
+        });
+}
+
+function closeAttendanceHistory() {
+    document.getElementById("attendance-history-modal").style.display = "none";
+}
+
+async function exportClassToPDF() {
+    if (!currentCourseId) {
+        alert("Không xác định được lớp học.");
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:8000/api/courses/${currentCourseId}/students`);
+        let json;
+        try {
+            json = await res.json();
+        } catch (e) {
+            console.error("Phản hồi không phải JSON:", e);
+            alert("Phản hồi từ server không hợp lệ.");
+            return;
+        }
+
+        if (!json || !json.success || !Array.isArray(json.data)) {
+            alert("Không thể lấy danh sách sinh viên.");
+            return;
+        }
+
+        const students = json.data;
+
+        // Khởi tạo tài liệu PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text("Danh sách sinh viên lớp " + currentCourseId, 14, 20);
+
+        // Chuẩn bị dữ liệu bảng
+        const headers = [
+            ["MSSV", "Họ và tên", "Niên khóa", "Đi muộn", "Đến sớm", "Vắng", "Vui", "Buồn", "Bình thản", "Ngạc nhiên", "Tức giận", "Kinh tởm", "Sợ hãi"]
+        ];
+
+        const rows = students.map(s => [
+            s.student_id,
+            s.student_name,
+            s.cohort,
+            s.late,
+            s.early,
+            s.absent,
+            s.happy,
+            s.sad,
+            s.neutral,
+            s.suprise,
+            s.angry,
+            s.disgust,
+            s.fear
+        ]);
+
+        // Tạo bảng
+        doc.autoTable({
+            head: headers,
+            body: rows,
+            startY: 30,
+            styles: { fontSize: 10 }
+        });
+
+        // Lưu file
+        doc.save(`danhsach_${currentCourseId}.pdf`);
+    } catch (err) {
+        console.error("Lỗi khi xuất PDF:", err);
+        alert("Không thể kết nối tới máy chủ.");
+    }
+}
