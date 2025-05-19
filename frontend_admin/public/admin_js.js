@@ -65,7 +65,7 @@ function showPage(pageId, event = null) {
 
 async function loadAllCourses() {
     try {
-        const response = await fetch("http://localhost:8000/api/courses");
+        const response = await fetch("http://backend:8000/api/courses");
         const json = await response.json();
 
         if (!json.success) {
@@ -87,7 +87,7 @@ async function viewCourseDetail(event, courseId) {
     if (event) event.stopPropagation();
 
     try {
-        const response = await fetch(`http://localhost:8000/api/courses/${courseId}`);
+        const response = await fetch(`http://backend:8000/api/courses/${courseId}`);
         const json = await response.json();
 
         if (!json.success) {
@@ -152,7 +152,7 @@ function closeClassDetail() {
 
 async function showClassDetailModal(courseId) {
     try {
-        const response = await fetch(`http://localhost:8000/api/courses/${courseId}`);
+        const response = await fetch(`http://backend:8000/api/courses/${courseId}`);
         const json = await response.json();
 
         if (!json.success) {
@@ -253,7 +253,7 @@ async function confirmRow(button) {
     }
 
     try {
-        const res = await fetch(`http://localhost:8000/api/students/${mssv}`);
+        const res = await fetch(`http://backend:8000/api/students/${mssv}`);
         const result = await res.json();
 
         if (!result.success || !result.data) {
@@ -339,7 +339,7 @@ async function createNewClass() {
     };
 
     try {
-        const res = await fetch('http://localhost:8000/api/courses', {
+        const res = await fetch('http://backend:8000/api/courses', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -370,7 +370,7 @@ async function deleteCourse(button, courseId) {
     if (!confirmDelete) return;
 
     try {
-        const response = await fetch(`http://localhost:8000/api/courses/${courseId}`, {
+        const response = await fetch(`http://backend:8000/api/courses/${courseId}`, {
             method: 'DELETE'
         });
 
@@ -392,7 +392,7 @@ async function deleteCourse(button, courseId) {
 
 async function loadAllStudents() {
     try {
-        const response = await fetch("http://localhost:8000/api/students");
+        const response = await fetch("http://backend:8000/api/students");
         const json = await response.json();
 
         if (!json.success) {
@@ -412,7 +412,7 @@ async function loadAllStudents() {
 
 async function showStudentDetailModal(studentId) {
     try {
-        const res = await fetch(`http://localhost:8000/api/students/${studentId}`);
+        const res = await fetch(`http://backend:8000/api/students/${studentId}`);
         const result = await res.json();
 
         // ✅ Kiểm tra kết quả từ backend
@@ -464,7 +464,7 @@ async function deleteStudent(button, studentId) {
     if (!confirmDelete) return;
 
     try {
-        const res = await fetch(`http://localhost:8000/api/students/${studentId}`, {
+        const res = await fetch(`http://backend:8000/api/students/${studentId}`, {
             method: 'DELETE'
         });
 
@@ -514,7 +514,7 @@ async function createStudentFromPage() {
     console.log("📤 Payload gửi đi:", payload);
 
     try {
-        const res = await fetch("http://localhost:8000/api/students", {
+        const res = await fetch("http://backend:8000/api/students", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -594,7 +594,7 @@ async function saveEditedClass() {
     console.log("📤 Payload sẽ gửi:", JSON.stringify(payload, null, 2));
 
     try {
-        const res = await fetch(`http://localhost:8000/api/courses/${courseId}`, {
+        const res = await fetch(`http://backend:8000/api/courses/${courseId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -679,7 +679,7 @@ function handleImageUpload(event) {
 
 async function editStudent(studentId) {
     try {
-        const res = await fetch(`http://localhost:8000/api/students/${studentId}`);
+        const res = await fetch(`http://backend:8000/api/students/${studentId}`);
         const result = await res.json();
         if (!result.success || !result.data) {
             alert("Không tìm thấy sinh viên.");
@@ -784,7 +784,7 @@ async function saveStudentFromModal() {
 
 
     try {
-        const res = await fetch(`http://localhost:8000/api/students/${studentId}`, {
+        const res = await fetch(`http://backend:8000/api/students/${studentId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -862,7 +862,7 @@ async function saveNewStudent() {
     console.log("🧾 Payload gửi đi:", JSON.stringify(payload, null, 2));
 
     try {
-        const res = await fetch("http://localhost:8000/api/students", {
+        const res = await fetch("http://backend:8000/api/students", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -984,14 +984,14 @@ function closeNoCourseModal() {
 async function updateDashboard() {
     try {
         // Lấy tổng số sinh viên
-        const resStudents = await fetch('http://localhost:8000/api/students');
+        const resStudents = await fetch('http://backend:8000/api/students');
         const students = await resStudents.json();
         if (students.success) {
             document.getElementById('total-students').innerText = students.data.length; // ✅
         }
 
         // Lấy tổng số lớp học
-        const resCourses = await fetch('http://localhost:8000/api/courses');
+        const resCourses = await fetch('http://backend:8000/api/courses');
         const courses = await resCourses.json();
         if (courses.success) {
             document.getElementById('total-courses').innerText = courses.data.length;
