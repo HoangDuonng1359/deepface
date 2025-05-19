@@ -1,5 +1,5 @@
 FROM mysql:latest
 
-EXPOSE 3307
+EXPOSE 3306
 
 CMD ["mysqld"]
