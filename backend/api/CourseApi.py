@@ -24,7 +24,7 @@ async def get_all_courses():
 
 
 @router.get("/{course_id}")
-async def get_course(course_id: str):
+async def get_course_by_id(course_id: str):
     """
     Lấy thông tin lớp học theo ID
     """
@@ -48,10 +48,20 @@ async def get_attendances_by_course_id(course_id: str):
         Lấy lịch sử điểm danh của một lớp học
     """
     
+    course = CourseService.get_course_by_id(course_id)
+    if course is None:
+        return {
+            "success": False,
+            "message": f"Không tìm thấy lớp có mã {course_id}",
+            "data": None
+        }
+    
+    attendances = CourseService.get_attendances_by_course_id(course_id)
+
     return {
         "success": True,
         "message": "Lấy lịch sử điểm danh thành công",
-        "data": []
+        "data": attendances
     }
 
 @router.get("/{course_id}/students")
@@ -59,7 +69,20 @@ async def get_students_by_course_id(course_id: str):
     """
     Lấy danh sách sinh viên trong một lớp học
     """
-    pass
+    course = CourseService.get_course_by_id(course_id)
+    if course is None:
+        return {
+            "success": False,
+            "message": f"Không tìm thấy lớp có mã {course_id}",
+            "data": None
+        }
+
+    students = CourseService.get_students_by_course_id(course_id)
+    return {
+        "success": True,
+        "message": "Lấy danh sách sinh viên thành công",
+        "data": students
+    }
 
 @router.post("/")
 async def create_course(new_course: CourseCreateRequestEntity):
