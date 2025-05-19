@@ -1,1 +1,12 @@
+<<<<<<< Updated upstream
 flask
+=======
+flask
+flask-api
+flask-cors
+tensorflow
+tf-keras
+deepface
+opencv-python-headless
+opencv-python
+>>>>>>> Stashed changes
