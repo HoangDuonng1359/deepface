@@ -31,7 +31,7 @@ def test_with_person(who="trump"):
 
 if __name__ == "__main__":
     test_with_person("trump")
-    test_with_person("lda")
-    test_with_person("ronaldo")
-    test_with_person("messi")
-    test_with_person("none")
+    # test_with_person("lda")
+    # test_with_person("ronaldo")
+    # test_with_person("messi")
+    # test_with_person("none")

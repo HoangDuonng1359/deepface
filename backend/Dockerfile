@@ -1,5 +1,5 @@
 # Sử dụng image Python chính thức
-FROM python:3.12-slim-bookworm
+FROM python:3.10.16-slim-bookworm
 
 # Làm việc trong thư mục /app
 WORKDIR /app

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 MODEL = "Facenet512"  # Best balance of accuracy and speed
 DISTANCE_METRIC = "euclidean_l2"  # More accurate for Facenet512
 CONFIDENCE_THRESHOLD = 0  # Adjust based on your needs
-DB_PATH = "model/Original Images/"  # Path to your face database
+DB_PATH = "face_database"  # Path to your face database
 
 class FaceRecognitionSystem:
     @staticmethod
@@ -26,6 +26,7 @@ class FaceRecognitionSystem:
                 
             # Convert BGR to RGB for proper display
             img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            print(img_rgb)
             
             # Perform face recognition
             people = DeepFace.find(
@@ -93,4 +94,4 @@ class FaceRecognitionSystem:
 
 if __name__ == "__main__":
     model = FaceRecognitionSystem()
-    model.single_image_recognition("model\Original Images\Camila Cabello\Camila Cabello_79.jpg")  # Process a single image
+    model.single_image_recognition("face_database\Dwayne Johnson\Dwayne Johnson_0.jpg")  # Process a single image
