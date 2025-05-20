@@ -1,6 +1,15 @@
 let allStudents = [];  // chứa toàn bộ danh sách từ server
 let allCourses = [];
 
+if (window.jspdf && window.jspdf.jsPDF && window.dejavuFontBase64) {
+    const jsPDF = window.jspdf.jsPDF;
+    jsPDF.API.events.push(['addFonts', function () {
+        this.addFileToVFS("DejaVuSans.ttf", window.dejavuFontBase64);
+        this.addFont("DejaVuSans.ttf", "DejaVuSans", "normal");
+    }]);
+}
+
+
 function renderStudentRows(students) {
   const tbody = document.querySelector('#view-students tbody');
   tbody.innerHTML = '';
@@ -1087,7 +1096,7 @@ async function exportClassToPDF() {
         // Khởi tạo tài liệu PDF
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-
+        doc.setFont("DejaVuSans");
         doc.setFontSize(16);
         doc.text("Danh sách sinh viên lớp " + currentCourseId, 14, 20);
 
@@ -1112,18 +1121,105 @@ async function exportClassToPDF() {
             s.fear
         ]);
 
-        // Tạo bảng
         doc.autoTable({
             head: headers,
             body: rows,
             startY: 30,
-            styles: { fontSize: 10 }
+            styles: {
+                font: "DejaVuSans",  // ❗ BẮT BUỘC
+                fontSize: 10
+            }
         });
-
+        
         // Lưu file
         doc.save(`danhsach_${currentCourseId}.pdf`);
     } catch (err) {
         console.error("Lỗi khi xuất PDF:", err);
         alert("Không thể kết nối tới máy chủ.");
     }
+}
+
+function openPhotoOptionMenu(event) {
+    const menu = document.getElementById("photo-option-menu");
+    menu.style.display = "block";
+    menu.style.left = `${event.clientX}px`;
+    menu.style.top = `${event.clientY}px`;
+
+    // Đóng nếu click ra ngoài
+    document.addEventListener("click", closePhotoMenuOnce, { once: true });
+}
+
+function closePhotoMenuOnce(e) {
+    const menu = document.getElementById("photo-option-menu");
+    if (!menu.contains(e.target)) {
+        menu.style.display = "none";
+    }
+}
+
+function triggerWebcamCapture() {
+    const container =
+        document.querySelector('#edit-student-modal[style*="display: flex"] #edit-photo-container') ||
+        document.querySelector('#add-student-modal[style*="display: flex"] #add-photo-container');
+
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        const video = document.createElement("video");
+        video.srcObject = stream;
+        video.play();
+
+        const overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.style.display = "flex";
+
+        const content = document.createElement("div");
+        content.className = "modal-content";
+        content.style.maxWidth = "640px";
+
+        const snapBtn = document.createElement("button");
+        snapBtn.className = "btn btn-success";
+        snapBtn.textContent = "📸 Chụp";
+        snapBtn.onclick = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+
+            stream.getTracks().forEach(t => t.stop());
+            overlay.remove();
+
+            const dataURL = canvas.toDataURL("image/png");
+
+            const newCard = document.createElement("div");
+            newCard.className = "student-card";
+            newCard.style.position = "relative";
+
+            const img = document.createElement("img");
+            img.src = dataURL;
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "8px";
+
+            const removeBtn = document.createElement("button");
+            removeBtn.textContent = "✕";
+            removeBtn.className = "remove-image-btn";
+            removeBtn.onclick = () => container.removeChild(newCard);
+
+            newCard.appendChild(img);
+            newCard.appendChild(removeBtn);
+
+            const addCard = container.querySelector('.add-card');
+            container.insertBefore(newCard, addCard);
+        };
+
+        content.appendChild(video);
+        content.appendChild(snapBtn);
+        overlay.appendChild(content);
+        document.body.appendChild(overlay);
+    }).catch(err => {
+        alert("Không thể truy cập camera.");
+        console.error(err);
+    });
+
+    // Ẩn menu sau khi chọn
+    document.getElementById("photo-option-menu").style.display = "none";
 }
