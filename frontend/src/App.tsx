@@ -7,9 +7,15 @@ import FacialAttendance from './page/FacialAttendance';
 import DeepFacePage from './page/DeepFacePage';
 import Dashboard from './page/Dashboard';
 import Attendance from './page/Attendance';
-import Test from './page/Attendance_copy';
+
+import { useEffect } from 'react';
+
+
 
 function App() {
+  useEffect(() => {
+  document.title = "Hệ thống điểm danh";
+  }, []);
   return (
     <BrowserRouter>
         <Routes>
@@ -17,7 +23,6 @@ function App() {
           <Route path='/FacialAttendance' element = {<FacialAttendance></FacialAttendance>} ></Route>
           <Route path= '/deepface' element = {<DeepFacePage></DeepFacePage>}></Route>
           <Route path='/attendance/:attendance_id' element = {<Attendance></Attendance>}></Route>
-          <Route path='/test/:courseId'element = {<Test></Test>}></Route>
         </Routes>
       </BrowserRouter>
   );

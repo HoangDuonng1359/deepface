@@ -79,9 +79,9 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
             type="primary" 
             size="large"
             onClick={handleStartAttendance}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="rounded-lg px-8 py-2 bg-green-600 text-white hover:bg-green-700"
           >
-            Bắt đầu điểm danh
+            Tạo ca điểm danh
           </Button>
         </div>
         
@@ -196,7 +196,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
 
       {/* Modal Form */}
       <Modal
-        title="Bắt đầu ca điểm danh"
+        title="Tạo ca điểm danh"
         open={isModalOpen}
         onOk={handleModalOk}
         onCancel={handleModalCancel}

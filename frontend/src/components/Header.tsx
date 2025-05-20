@@ -13,10 +13,6 @@ const Header: React.FC = () => {
   const goToHome = () => {
     navigate('/'); // chuyển hướng về homepage
   };
-  
-  useEffect(() => {
-    document.title = "Hệ thống điểm danh";
-  }, []);
 
   return (
     <AntHeader className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-700 px-6">
