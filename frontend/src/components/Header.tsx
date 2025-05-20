@@ -1,13 +1,14 @@
 import React from 'react';
 import { Layout, Typography, Avatar, Space, Badge } from 'antd';
 import { BellOutlined, UserOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom'; // ✅ import đúng
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const { Header: AntHeader } = Layout;
 const { Title } = Typography;
 
 const Header: React.FC = () => {
-  const navigate = useNavigate(); // ✅ gọi đúng vị trí, bên trong function component
+  const navigate = useNavigate();
 
   const goToHome = () => {
     navigate('/'); // chuyển hướng về homepage
@@ -29,3 +30,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+

@@ -42,6 +42,23 @@ async def create_attendance(attendance: AttendanceCreateRequestEntity):
         "data": None
     }
 
+@router.get("/{attendance_id}")
+async def get_attendance_by_id(attendance_id: int):
+    """Lấy gữ liệu attendance bằng id"""
+    attendance = AttendanceService.get_attendance_by_id(attendance_id)
+    if attendance is None:
+        return {
+            "success": False,
+            "message": f"Không tìm thấy ca điểm danh có ID {attendance_id}",
+            "data": None
+        }
+    else:
+        return{
+            "success": True,
+            "message": f"Lấy dữ liệu điểm danh thành công",
+            "data": attendance
+        }
+
 
 @router.put("/{attendance_id}/end")
 async def end_attendance(attendance_id: int):
