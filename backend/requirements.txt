@@ -4,3 +4,4 @@ pymysql
 pydantic
 cryptography
 pytz
+deepface
