@@ -1,6 +1,8 @@
 from drivers.DatabaseDriver import DatabaseConnector
+from drivers.AIDriver import AIDriver
 
 db = DatabaseConnector()
+model = AIDriver()
 
 class StudentService:
 
@@ -72,17 +74,8 @@ class StudentService:
             params = (student_id, image)
             db.query_set(sql, params)
 
-    @staticmethod
-    def add_image_for_student(student_id: str, image: str):
-        """
-        Thêm ảnh cho sinh viên
-        """
-        sql = """
-            INSERT INTO student_image (student_id, image) 
-            VALUES (%s, %s)
-        """
-        params = (student_id, image)
-        db.query_set(sql, params)
+        # Thêm sinh viên vào model AI
+        model.add_student(student_id, images)
     
     @staticmethod
     def update_student(
@@ -112,6 +105,8 @@ class StudentService:
         params = (student_id,)
         db.query_set(sql, params)
 
+        model.delete_student(student_id)
+
         # Thêm danh sách ảnh đã cập nhật
         sql = """
             INSERT INTO student_image (student_id, image) 
@@ -120,6 +115,8 @@ class StudentService:
         for image in images:
             params = (student_id, image)
             db.query_set(sql, params)
+        
+        model.add_student(student_id, images)
 
     @staticmethod
     def delete_student(student_id: int):
@@ -142,4 +139,4 @@ class StudentService:
         params = (student_id,)
         db.query_set(sql, params)
 
-
+        model.delete_student(student_id)

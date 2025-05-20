@@ -112,20 +112,21 @@ class AttendanceService:
         
         # Lấy danh sách ảnh của sinh viên trong ca điểm danh
         sql = """
-            SELECT
-                sc.student_id AS student_id,
-                si.image AS image
+            SELECT 
+                sc.student_id AS student_id
             FROM student_course sc
-            JOIN student_image si
-                ON si.student_id = sc.student_id
             WHERE sc.course_id = %s
         """
         params = (course_id,)
-        images = db.query_get(sql, params)
+        students = db.query_get(sql, params)
+        students = [student['student_id'] for student in students]
         
         # Gọi hàm nhận diện khuôn mặt
-        student_id = AIDriver.find(target_image=image, compare_images=images)
+        student_id = AIDriver.find(image)
+        if (student_id not in students) or (student_id == "Unknown"):
+            return None
         return student_id
+
 
     @staticmethod
     def checkin_attendance(attendance_id: int, student_id: str, emotion: str, time_now):
