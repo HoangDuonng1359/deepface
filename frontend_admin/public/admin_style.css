@@ -646,3 +646,10 @@ body {
     background-color: #f0f4ff;
     border-top-color: var(--primary);
 }
+
+#photo-option-menu button {
+    margin: 4px 0;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
