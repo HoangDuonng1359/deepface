@@ -7,6 +7,7 @@ from entities.CourseEntity import (
 )
 
 from services.CourseService import CourseService
+from services.StudentService import StudentService
 
 router = APIRouter(prefix="/api/courses", tags=["courses"])
 
@@ -89,6 +90,8 @@ async def create_course(new_course: CourseCreateRequestEntity):
     """
     Tạo lớp học mới
     """
+
+    # Kiểm tra xem lớp học đã tồn tại hay chưa
     course = CourseService.get_course_by_id(new_course.course_id)
     if course is not None:
         return {
@@ -96,7 +99,17 @@ async def create_course(new_course: CourseCreateRequestEntity):
             "message": "Lớp học đã tồn tại",
             "data": course
         }
+    # Kiểm tra xem sinh viên đã tồn tại hay chưa
+    for student_id in new_course.students:
+        student_in_course = StudentService.get_student_by_id(student_id)
+        if student_in_course is None:
+            return {
+                "success": False,
+                "message": f"Sinh viên có mã {student_id} không tồn tại",
+                "data": None
+            }
 
+    # Tạo lớp học mới
     CourseService.create_course(
         new_course.course_id, 
         new_course.course_name, 
