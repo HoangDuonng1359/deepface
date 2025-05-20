@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Card, Typography, Button, Tag, Divider, Row, Col, Statistic, Modal, Result, Segmented, Avatar } from 'antd';
+import { Card, Typography, Button, Tag, Divider, Row, Col, Statistic, Modal, Result, Segmented, Avatar, Form, Input, DatePicker, TimePicker, message } from 'antd';
 import { UserOutlined, ClockCircleOutlined, CalendarOutlined, TeamOutlined, BarcodeOutlined } from '@ant-design/icons';
 import { Course, Student } from '../interface/Course';
 import { useNavigate } from 'react-router-dom';
 import { Attendance } from '../interface/Attendance';
+import { API_ENDPOINTS } from '../constants/api';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -14,12 +15,53 @@ interface CourseDetailProps {
 const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
   const navigate = useNavigate();
 
-  const [segmented_value, setSegmented_value] = useState('Sinh viên')
+  const [segmented_value, setSegmented_value] = useState('Sinh viên');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
 
   const handleStartAttendance = () => {
-    navigate(`/attendance/${course.course_id}`);
+    setIsModalOpen(true);
+    form.setFieldsValue({
+      course_id: course.course_id,
+      late_time: null,
+      end_time: null,
+    });
   };
-  
+
+  const handleModalOk = () => {
+    form
+      .validateFields()
+      .then(async values => {
+        setIsModalOpen(false);
+        try {
+          const res = await fetch(API_ENDPOINTS.ATTENDANCE.CREATE_ATTENDANCE, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              course_id: values.course_id,
+              late_time: values.late_time ? values.late_time.format('YYYY-MM-DD HH:mm') : null,
+              end_time: values.end_time ? values.end_time.format('YYYY-MM-DD HH:mm') : null,
+            }),
+          });
+          const attendance = await res.json();
+          // Xử lý dữ liệu ở đây, ví dụ chuyển hướng hoặc gọi API
+          navigate(`/attendance/${attendance.data}`);
+          message.success('Đã lưu thông tin ca điểm danh!');
+        } catch (e) {
+          alert("Lỗi tạo ca điểm danh: " + e);
+        }
+      })
+      .catch(info => {
+        // Không làm gì, form sẽ báo lỗi
+      });
+  };
+
+  const handleModalCancel = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="space-y-6 w-full h-full">
       <Card className="shadow-md rounded-lg border-0">
@@ -131,7 +173,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
                 >
                   <div className="flex items-center gap-2 mb-2">
                   <CalendarOutlined />
-                  <span><b>Ca điểm danh #{idx + 1}</b></span>
+                  <span><b>Ca điểm danh #{attendance.attendance_id}</b></span>
                   </div>
                     <div className="text-xs text-gray-500">
                     Bắt đầu: {attendance.start_time ? new Date(attendance.start_time).toLocaleString('vi-VN', { hour12: false }) : 'Không rõ'}
@@ -151,6 +193,55 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
             </Row>
             )}
       </Card>
+
+      {/* Modal Form */}
+      <Modal
+        title="Bắt đầu ca điểm danh"
+        open={isModalOpen}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
+        okText="Xác nhận"
+        cancelText="Hủy"
+        destroyOnClose
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{
+            course_id: course.course_id,
+            late_time: null,
+            end_time: null,
+          }}
+        >
+          <Form.Item label="Mã lớp" name="course_id">
+            <Input disabled />
+          </Form.Item>
+          <Form.Item
+            label="Giờ vào muộn"
+            name="late_time"
+            rules={[{ required: true, message: 'Vui lòng chọn giờ vào muộn!' }]}
+          >
+            <DatePicker
+              showTime={{ format: 'HH:mm' }}
+              format="YYYY-MM-DD HH:mm"
+              style={{ width: '100%' }}
+              placeholder="Chọn ngày và giờ vào muộn"
+            />
+          </Form.Item>
+          <Form.Item
+            label="Giờ kết thúc"
+            name="end_time"
+            rules={[{ required: true, message: 'Vui lòng chọn giờ kết thúc!' }]}
+          >
+            <DatePicker
+              showTime={{ format: 'HH:mm' }}
+              format="YYYY-MM-DD HH:mm"
+              style={{ width: '100%' }}
+              placeholder="Chọn ngày và giờ kết thúc"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

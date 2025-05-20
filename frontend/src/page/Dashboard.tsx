@@ -52,7 +52,7 @@ const Dashboard: React.FC = () => {
           return { ...course, students: [], attendances: [] };
         }
           }));
-          console.log(coursesWithStudents)
+          //console.log(coursesWithStudents)
           setCourses(coursesWithStudents);
         } catch (error) {
           console.log('Lỗi lấy dữ liệu khóa học', error);

@@ -9,7 +9,9 @@ export interface StudentsAttendance extends Student{
 
 export interface Attendance {
     attendance_id: number;
+    course_id : string;
     start_time: string;
+    late_time: string;
     end_time: string;
     students: StudentsAttendance[];
 }

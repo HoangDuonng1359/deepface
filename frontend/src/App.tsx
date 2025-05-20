@@ -16,7 +16,7 @@ function App() {
           <Route path='/' element={<Dashboard></Dashboard>}></Route>
           <Route path='/FacialAttendance' element = {<FacialAttendance></FacialAttendance>} ></Route>
           <Route path= '/deepface' element = {<DeepFacePage></DeepFacePage>}></Route>
-          <Route path='/attendance/:courseId' element = {<Attendance></Attendance>}></Route>
+          <Route path='/attendance/:attendance_id' element = {<Attendance></Attendance>}></Route>
           <Route path='/test/:courseId'element = {<Test></Test>}></Route>
         </Routes>
       </BrowserRouter>
