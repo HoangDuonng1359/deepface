@@ -6,6 +6,7 @@ export interface Student{
     student_id: string;
     student_name: string;
     cohort: string;
+    images: string;
 }
 
 export interface Course {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { List, Typography, Input } from 'antd';
 import { SearchOutlined} from '@ant-design/icons';
 import { Course } from '../interface/Course';
@@ -12,6 +12,13 @@ interface CourseListProps {
 }
 
 const CourseList: React.FC<CourseListProps> = ({ courses, selectedCourseId, onSelectCourse }) => {
+  const [search, setSearch] = useState<string>("");
+
+  // Lọc danh sách lớp học theo tên hoặc tên giảng viên
+  const filteredCourses = courses.filter(course =>
+    course.course_name.toLowerCase().includes(search.toLowerCase()) ||
+    course.teacher_name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="p-4 h-full flex flex-col">
@@ -20,12 +27,14 @@ const CourseList: React.FC<CourseListProps> = ({ courses, selectedCourseId, onSe
       <Input 
         placeholder="Tìm kiếm lớp học" 
         prefix={<SearchOutlined className="text-gray-400" />}
-        className="mb-4" 
+        className="mb-4"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
       />
       
       <List
         className="overflow-auto flex-1"
-        dataSource={courses}
+        dataSource={filteredCourses}
         renderItem={course => (
           <List.Item 
             onClick={() => onSelectCourse(course.course_id)}
@@ -36,6 +45,9 @@ const CourseList: React.FC<CourseListProps> = ({ courses, selectedCourseId, onSe
             <div className="w-full">
               <div className="flex justify-between items-center mb-2 ml-2">
                 <Text strong className="text-lg">{course.course_name}</Text>
+              </div>
+              <div className="flex justify-between items-center mb-2 ml-2">
+                <Text type="secondary" className="text-sm truncate">{course.course_id}</Text>
               </div>
               <div className="flex justify-between items-center mb-2 ml-2">
                 <Text type="secondary" className="text-sm truncate">{course.teacher_name}</Text>

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Typography, Button, Tag, Divider, Row, Col, Statistic, Modal, Result, Segmented } from 'antd';
+import { Card, Typography, Button, Tag, Divider, Row, Col, Statistic, Modal, Result, Segmented, Avatar } from 'antd';
 import { UserOutlined, ClockCircleOutlined, CalendarOutlined, TeamOutlined, BarcodeOutlined } from '@ant-design/icons';
 import { Course, Student } from '../interface/Course';
 import { useNavigate } from 'react-router-dom';
+import { Attendance } from '../interface/Attendance';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -20,7 +21,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full h-full">
       <Card className="shadow-md rounded-lg border-0">
         <div className="flex justify-between items-start mb-4">
           <div>
@@ -80,30 +81,75 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
                 <Segmented<string>
                   options={['Sinh viên', 'Ca điểm danh']}
                   onChange={(segmented_value) => {
-                    //console.log(segmented_value); // string
+                    setSegmented_value(segmented_value);
                   }}
                   defaultValue = 'Sinh viên'
                 />
           </Row>
-          <Row gutter={[16, 16]} className='pt-2'>
-            {course.students && course.students.length > 0 ? (
-              course.students.map((student : Student) => (
+          {segmented_value === 'Sinh viên' ? (
+            <Row gutter={[16, 16]} className='pt-2'>
+              {course.students && course.students.length > 0 ? (
+              course.students.map((student: Student) => (
                 <Col key={student.student_id} span={8}>
-                  <Card size="small" className="mb-2">
-                    <div className="flex items-center gap-2">
-                      <UserOutlined />
-                      <span>{student.student_name}</span>
-                    </div>
-                    <div className="text-xs text-gray-500">Mã sinh viên: {student.student_id}</div>
-                  </Card>
+                <Card
+                  size="small"
+                  className="mb-2 transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg hover:bg-blue-50"
+                >
+                  <div className="flex items-center gap-2">
+                    <Avatar
+                      size={64}
+                      src={
+                        student.images !== null
+                          ? `data:image/jpeg;base64,${student.images}`
+                          : undefined
+                      }
+                      icon={!student.images ? <UserOutlined /> : undefined}
+                      style={{ borderRadius: 8, objectFit: 'cover' }}
+                    />
+                    <span>{student.student_name}</span>
+                  </div>
+                  <div className="text-xs text-gray-500">Mã sinh viên: {student.student_id}</div>
+                  <div className='text-xs text-gray-500'>Khóa học: {student.cohort}</div>
+                  <div style={{ marginTop: 8 }}></div>
+                </Card>
                 </Col>
               ))
-            ) : (
+              ) : (
               <Col>
                 <span>Không có sinh viên</span>
               </Col>
+              )}
+            </Row>
+            ) : (
+            <Row gutter={[16, 16]} className='pt-2'>
+              {course.attendances && course.attendances.length > 0 ? (
+              course.attendances.map((attendance: Attendance, idx: number) => (
+                <Col key={attendance.attendance_id || idx} span={8}>
+                <Card
+                  size="small"
+                  className="mb-2 transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg hover:bg-blue-50"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                  <CalendarOutlined />
+                  <span><b>Ca điểm danh #{idx + 1}</b></span>
+                  </div>
+                    <div className="text-xs text-gray-500">
+                    Bắt đầu: {attendance.start_time ? new Date(attendance.start_time).toLocaleString('vi-VN', { hour12: false }) : 'Không rõ'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                    Kết thúc: {attendance.end_time ? new Date(attendance.end_time).toLocaleString('vi-VN', { hour12: false }) : 'Không rõ'}
+                  </div>
+                  <div className="text-xs text-gray-500"> Số học sinh tham gia: {attendance.students.length}</div>
+                </Card>
+                </Col>
+              ))
+              ) : (
+              <Col>
+                <span>Không có ca điểm danh</span>
+              </Col>
+              )}
+            </Row>
             )}
-          </Row>
       </Card>
     </div>
   );

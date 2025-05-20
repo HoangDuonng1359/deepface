@@ -1,6 +1,9 @@
 const BASE_URL_BE = "http://localhost:8000/api"
 const BASE_URL_MODEL = "http://localhost:5000"
 export const API_ENDPOINTS = {
+    STUDENT: {
+        GET_STUDENTS_BY_ID : (student_id:number) => `${BASE_URL_BE}/students/${student_id}`,
+    },
     COURSE: {
         GET_ALL : `${BASE_URL_BE}/courses`,
         GET_BY_ID: (course_id: string) => `${BASE_URL_BE}/courses/${course_id}`,
