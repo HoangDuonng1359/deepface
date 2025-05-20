@@ -1,5 +1,6 @@
 import pybase64
 from AIDriver import AIDriver
+import time
 
 def decode_image(image_path):
     with open(image_path, "rb") as f:
@@ -23,15 +24,20 @@ def test_with_person(who="trump"):
             })
 
     target_image = decode_image(f"backend/drivers/images/{who}/{who}.jpg")
-
-    result = AIDriver.find(target_image=target_image, compare_images=compare_images)
+    
+    model = AIDriver(compare_images)
+    result = model.find(target_image=target_image)
     
     print(f"Result: {result}")
     print(f"Expected: {who}")
 
 if __name__ == "__main__":
+    start = time.time()
     test_with_person("trump")
     # test_with_person("lda")
     # test_with_person("ronaldo")
     # test_with_person("messi")
     # test_with_person("none")
+    end = time.time()
+    print(end-start)
+    
