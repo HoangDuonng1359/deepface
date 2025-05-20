@@ -9,7 +9,6 @@ if (window.jspdf && window.jspdf.jsPDF && window.dejavuFontBase64) {
     }]);
 }
 
-
 function renderStudentRows(students) {
   const tbody = document.querySelector('#view-students tbody');
   tbody.innerHTML = '';
@@ -739,7 +738,7 @@ async function editStudent(studentId) {
         // Thêm lại nút dấu +
         const addCard = document.createElement('div');
         addCard.className = 'student-card add-card';
-        addCard.onclick = triggerImageUpload;
+        addCard.setAttribute("onclick", "openPhotoOptionMenu(event)");  // ✅ sửa đúng hàm mở popup
         addCard.innerHTML = '<span>+</span>';
         container.appendChild(addCard);
 
@@ -831,7 +830,7 @@ function openAddStudentModal() {
     document.getElementById("add-mssv").value = '';
     document.getElementById("add-name").value = '';
     document.getElementById("add-photo-container").innerHTML = `
-        <div class="student-card add-card" onclick="triggerImageUpload()">
+        <div class="student-card add-card" onclick="openPhotoOptionMenu(event)">
             <span>+</span>
         </div>
     `;
@@ -1142,14 +1141,17 @@ async function exportClassToPDF() {
 }
 
 function openPhotoOptionMenu(event) {
+
     const menu = document.getElementById("photo-option-menu");
     menu.style.display = "block";
     menu.style.left = `${event.clientX}px`;
     menu.style.top = `${event.clientY}px`;
 
-    // Đóng nếu click ra ngoài
-    document.addEventListener("click", closePhotoMenuOnce, { once: true });
+    setTimeout(() => {
+        document.addEventListener("click", closePhotoMenuOnce, { once: true });
+    }, 0);
 }
+
 
 function closePhotoMenuOnce(e) {
     const menu = document.getElementById("photo-option-menu");
