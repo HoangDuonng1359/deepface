@@ -5,6 +5,8 @@ from entities.AttendanceEntity import (
 )
 from services.AttendanceService import AttendanceService
 from services.CourseService import CourseService
+from datetime import datetime
+import pytz
 
 router = APIRouter(prefix="/api/attendance", tags=["attendance"])
 
@@ -79,7 +81,10 @@ async def check_attendance(attendance_id: int, request: AttendanceCheckRequestEn
     """
     Gửi một yêu cầu điểm danh
     """
+    # Tính thời gian tại điểm bắt đầu request
+    time_now = datetime.now(pytz.timezone("Asia/Ho_Chi_Minh"))
 
+    # Kiểm tra xem ca điểm danh có tồn tại hay không
     attendance = AttendanceService.get_attendance_by_id(attendance_id)
     if attendance is None:
         return {
@@ -89,7 +94,11 @@ async def check_attendance(attendance_id: int, request: AttendanceCheckRequestEn
         }
 
     # Gửi yêu cầu nhận diện khuôn mặt
-    student_id = AttendanceService.verify_attendance(attendance_id, request.image)
+    student_id = AttendanceService.verify_attendance(
+        attendance['course_id'], 
+        request.image
+    )
+
     if student_id is None:
         return {
             "success": False,
@@ -107,7 +116,13 @@ async def check_attendance(attendance_id: int, request: AttendanceCheckRequestEn
         }
     
     # Nếu chưa, tiến hành điểm danh
-    AttendanceService.checkin_attendance(attendance_id, student_id, request.emotion)
+    AttendanceService.checkin_attendance(
+        attendance_id, 
+        student_id, 
+        request.emotion,
+        time_now
+    )
+
     return {
         "success": True,
         "message": "Điểm danh thành công",
