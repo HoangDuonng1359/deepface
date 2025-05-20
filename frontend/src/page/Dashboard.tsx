@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {Typography, Layout} from 'antd';
+import {Layout} from 'antd';
 
 // Components
 import Header from '../components/Header';
@@ -7,32 +7,51 @@ import { Course } from '../interface/Course';
 import CourseList from '../components/CourseList';
 import CourseDetail from '../components/CourseDetail';
 import { API_ENDPOINTS } from '../constants/api';
-import { useNavigate } from 'react-router-dom';
 
 const { Content, Sider } = Layout;
-const { Title } = Typography;
 
 const Dashboard: React.FC = () => {
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  
+    useEffect(() => {
+      const fetchCoursesAndStudents = async () => {
+        try {
+          const res = await fetch(API_ENDPOINTS.COURSE.GET_ALL);
+          const result = await res.json();
+          const coursesWithStudents = await Promise.all(result.data.map(async (course: Course) => {
+            try {
+              const resStudents = await fetch(API_ENDPOINTS.COURSE.GET_STUDENTS_BY_COURSE_ID(course.course_id));
+              const studentsResult = await resStudents.json();
 
-  useEffect(() => {
-  const fetchCourses = async () => {
-    try {
-      const res = await fetch(API_ENDPOINTS.COURSE.GET_ALL);
-      const result = await res.json();
-      setCourses(result.data);
-      
-    } catch (error) {
-      console.log('Lỗi lấy dữ liệu khóa học', error);
-    }
-  };
+              // Fetch attendances
+              let attendances = [];
+              try {
+                const resAttendances = await fetch(API_ENDPOINTS.COURSE.GET_ATTENDANCES_BY_COURSE_ID(course.course_id));
+                const attendancesResult = await resAttendances.json();
+                attendances = attendancesResult.data;
+              } catch (e) {
+                console.log('Lỗi lấy dữ liệu attendances', e);
+              }
 
-    fetchCourses();
-  }, []);
+              return { ...course, students: studentsResult.data, attendances };
+            } catch (e) {
+              console.log('Lỗi lấy dữ liệu students', e);
+              return { ...course, students: [], attendances: [] };
+            }
+          }));
+          setCourses(coursesWithStudents);
+        } catch (error) {
+          console.log('Lỗi lấy dữ liệu khóa học', error);
+        }
+      };
+
+      fetchCoursesAndStudents();
+    }, []);
+
 
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(courses[0]);
 
-  const handleCourseSelect = (courseId: number) => {
+  const handleCourseSelect = (courseId: string) => {
     const course: Course | null = (courses as Course[]).find((c: Course) => c.course_id === courseId) || null;
     setSelectedCourse(course);
   };
@@ -47,7 +66,7 @@ const Dashboard: React.FC = () => {
         <Sider width={300} theme="light" className="border-r border-gray-200">
           <CourseList 
             courses={courses} 
-            selectedCourseId={selectedCourse?.course_id || 0} 
+            selectedCourseId={selectedCourse?.course_id || ""} 
             onSelectCourse={handleCourseSelect} 
           />
         </Sider>

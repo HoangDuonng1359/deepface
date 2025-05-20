@@ -575,6 +575,8 @@ async function createStudentFromPage() {
 
 
 
+
+
 async function saveEditedClass() {
     const courseId = document.getElementById("edit-class-id").value.trim();
     const courseName = document.getElementById("edit-class-name").value.trim();

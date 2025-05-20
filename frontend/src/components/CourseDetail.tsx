@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Typography, Button, Tag, Divider, Row, Col, Statistic, Modal, Result } from 'antd';
-import { UserOutlined, ClockCircleOutlined, CalendarOutlined, TeamOutlined } from '@ant-design/icons';
-import { Course } from '../interface/Course';
+import { Card, Typography, Button, Tag, Divider, Row, Col, Statistic, Modal, Result, Segmented } from 'antd';
+import { UserOutlined, ClockCircleOutlined, CalendarOutlined, TeamOutlined, BarcodeOutlined } from '@ant-design/icons';
+import { Course, Student } from '../interface/Course';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text, Paragraph } = Typography;
@@ -11,27 +11,14 @@ interface CourseDetailProps {
 }
 
 const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
-  const [attendanceModalVisible, setAttendanceModalVisible] = useState(false);
   const navigate = useNavigate();
 
+  const [segmented_value, setSegmented_value] = useState('Sinh viên')
 
   const handleStartAttendance = () => {
     navigate(`/attendance/${course.course_id}`);
   };
   
-  const getStatusColor = (status: Course['status']) => {
-    switch (status) {
-      case 'active':
-        return 'green';
-      case 'upcoming':
-        return 'blue';
-      case 'completed':
-        return 'default';
-      default:
-        return 'default';
-    }
-  };
-
   return (
     <div className="space-y-6">
       <Card className="shadow-md rounded-lg border-0">
@@ -39,9 +26,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Title level={2} className="m-0">{course.course_name}</Title>
-              <Tag color={getStatusColor(course.status)} className="uppercase">
-                {course.status}
-              </Tag>
             </div>
             <Text type="secondary" className="flex items-center gap-1">
               <UserOutlined /> Giảng viên: <Text strong>{course.teacher_name}</Text>
@@ -67,8 +51,8 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
         <Row gutter={24}>
           <Col span={8}>
             <Statistic 
-              title={<span className="flex items-center gap-1"><CalendarOutlined /> Lịch</span>}
-              value={"8:00"}
+              title={<span className="flex items-center gap-1"><BarcodeOutlined /> Mã lớp</span>}
+              value={course.course_id}
               // value={course.schedule}
               valueStyle={{ fontSize: '1rem' }}
               className="mb-4"
@@ -76,20 +60,50 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
           </Col>
           <Col span={8}>
             <Statistic 
-              title={<span className="flex items-center gap-1"><TeamOutlined /> Sinh viên</span>}
-              value={course.numStudent}
+              title={<span className="flex items-center gap-1"><TeamOutlined />Số sinh viên</span>}
+              value={course.students?.length ?? 0}
               className="mb-4"
             />
           </Col>
           <Col span={8}>
             <Statistic 
-              title={<span className="flex items-center gap-1"><ClockCircleOutlined /> Thời lượng</span>}
-              value="2 hours"
+              title={<span className="flex items-center gap-1"><ClockCircleOutlined /> Số ca điểm danh</span>}
+              value={course.attendances?.length ?? 0}
               valueStyle={{ fontSize: '1rem' }}
               className="mb-4"
             />
           </Col>
         </Row>
+      </Card>
+      <Card className='shadow-md rounded-lg border-0'>
+          <Row>
+                <Segmented<string>
+                  options={['Sinh viên', 'Ca điểm danh']}
+                  onChange={(segmented_value) => {
+                    //console.log(segmented_value); // string
+                  }}
+                  defaultValue = 'Sinh viên'
+                />
+          </Row>
+          <Row gutter={[16, 16]} className='pt-2'>
+            {course.students && course.students.length > 0 ? (
+              course.students.map((student : Student) => (
+                <Col key={student.student_id} span={8}>
+                  <Card size="small" className="mb-2">
+                    <div className="flex items-center gap-2">
+                      <UserOutlined />
+                      <span>{student.student_name}</span>
+                    </div>
+                    <div className="text-xs text-gray-500">Mã sinh viên: {student.student_id}</div>
+                  </Card>
+                </Col>
+              ))
+            ) : (
+              <Col>
+                <span>Không có sinh viên</span>
+              </Col>
+            )}
+          </Row>
       </Card>
     </div>
   );
