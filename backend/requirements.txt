@@ -4,5 +4,4 @@ pymysql
 pydantic
 cryptography
 pytz
-deepface
 pybase64
