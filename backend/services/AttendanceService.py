@@ -98,8 +98,17 @@ class AttendanceService:
     def get_student_by_attendance_id(attendance_id: int, student_id: str):
         sql = """
             SELECT
+                sa.student_id AS student_id,
+                s.student_name AS student_name,
+                s.cohort AS cohort,
+                sa.status AS status,
+                sa.emotion AS emotion,
+                sa.time_in AS time_in
+            FROM student_attendance sa
+            JOIN students s
+                ON s.student_id = sa.student_id
+            WHERE sa.attendance_id = %s and s.student_id = %s
 
-            FROM student_course sc
             
         """
         params = (attendance_id, student_id)
@@ -125,8 +134,8 @@ class AttendanceService:
         students = [student['student_id'] for student in students]
         
         # Gọi hàm nhận diện khuôn mặt
-        student_id = model.find(image)
-        if (student_id not in students) or (student_id == "Unknown"):
+        student_id = str(model.find(image))
+        if (student_id not in students):
             return None
         return student_id
 
@@ -142,7 +151,7 @@ class AttendanceService:
         attendance = AttendanceService.get_attendance_by_id(attendance_id)
         status = 'early'
         if attendance['late_time'] is not None:
-            late_time = datetime.strptime(attendance['late_time'], "%Y-%m-%d %H:%M:%S")
+            late_time = attendance['late_time']
             late_time = pytz.timezone("Asia/Bangkok").localize(late_time)
             status = 'late' if late_time < time_now else 'early'
 
