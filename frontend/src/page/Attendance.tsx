@@ -4,11 +4,12 @@ import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Spin, notification } from 'antd';
+import { Button, Spin, notification, Modal } from 'antd';
 import { CameraOutlined, LoadingOutlined, StopOutlined } from '@ant-design/icons';
 import { Course } from '../interface/Course';
 import * as faceapi from 'face-api.js';
 import { Attendance } from '../interface/Attendance';
+import { useNavigate } from 'react-router-dom';
 
 // Extend the Window interface to include latestResizedDetections
 declare global {
@@ -32,6 +33,8 @@ const AttendancePage: React.FC = () => {
   const [predictionResult, setPredictionResult] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
+  const navigate = useNavigate();
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   const { attendance_id } = useParams();
   const [course, setCourse] = useState<Course>();
@@ -225,6 +228,28 @@ const AttendancePage: React.FC = () => {
     // eslint-disable-next-line
   }, [modelsLoaded, isCapturing, stream]);
 
+  const endAttendance = async () => {
+    if (attendance?.attendance_id) {
+      try {
+        const res = await fetch(API_ENDPOINTS.ATTENDANCE.END_ATTENDANCE(attendance.attendance_id), {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const result = await res.json();
+        if (result.success) {
+          alert("Kết thúc thành công");
+          navigate('/');
+        } else {
+          alert("Lỗi kết thúc ca điểm danh: " + result.message)
+        }
+      } catch (e) {
+        alert("lỗi" + e);
+      }
+    }
+  }
+
   // Gửi ảnh lên server để dự đoán tuổi
   const sendImageToServer = async (base64Image: string) => {
     setLoading(true);
@@ -308,7 +333,7 @@ const AttendancePage: React.FC = () => {
               icon={isCapturing ? <StopOutlined /> : <CameraOutlined />}
               onClick={isCapturing ? stopCamera : startCamera}
               size="large"
-              className={`transition-all duration-200 rounded-lg px-8 py-2 ${isCapturing ? "bg-red-600 text-white hover:bg-red-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+              className={`transition-all duration-200 rounded-lg px-8 py-2 ${isCapturing ? "bg-red-600 text-red-400 hover:bg-red-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
               style={{ minWidth: 160, fontWeight: 600 }}
             >
               {isCapturing ? "Dừng Camera" : "Bật Camera"}
@@ -318,6 +343,7 @@ const AttendancePage: React.FC = () => {
               size="large"
               className="rounded-lg px-8 py-2 bg-green-600 text-white hover:bg-green-700"
               style={{ minWidth: 160, fontWeight: 600 }}
+              onClick={() => setConfirmVisible(true)}
             >
               Kết thúc điểm danh
             </Button>
@@ -412,6 +438,19 @@ const AttendancePage: React.FC = () => {
             </div>
           </div>
         </div>
+        {/* Modal xác nhận */}
+        <Modal
+          open={confirmVisible}
+          onOk={() => {
+            setConfirmVisible(false);
+            endAttendance();
+          }}
+          onCancel={() => setConfirmVisible(false)}
+          okText="Xác nhận"
+          cancelText="Hủy"
+        >
+          Bạn có chắc chắn muốn kết thúc điểm danh không?
+        </Modal>
       </div>
     </div>
   );
