@@ -33,7 +33,6 @@ def build_face_database(compare_images, db_path):
     """Reads base64 images, computes embeddings in parallel, saves them to one .npz file."""
 
     if len(compare_images) == 0:
-        print("No images provided for comparison.")
         return np.array([]), np.array([])
 
     if not os.path.isdir(db_path):
