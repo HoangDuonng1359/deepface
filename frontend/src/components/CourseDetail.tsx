@@ -5,6 +5,7 @@ import { Course, Student } from '../interface/Course';
 import { useNavigate } from 'react-router-dom';
 import { Attendance } from '../interface/Attendance';
 import { API_ENDPOINTS } from '../constants/api';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -48,7 +49,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
           const attendance = await res.json();
           // Xử lý dữ liệu ở đây, ví dụ chuyển hướng hoặc gọi API
           navigate(`/attendance/${attendance.data}`);
-          message.success('Đã lưu thông tin ca điểm danh!');
         } catch (e) {
           alert("Lỗi tạo ca điểm danh: " + e);
         }
@@ -62,6 +62,21 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
     setIsModalOpen(false);
   };
 
+  const handleOnClickAttendance = (attendance_id:number) => {
+     navigate('/statistics/' + attendance_id);
+  };
+
+  // Kiểm tra attendance đầu tiên
+  const firstAttendance = course.attendances && course.attendances.length > 0 ? course.attendances[0] : null;
+  const now = dayjs();
+
+  const isOngoingAttendance =
+    firstAttendance &&
+    (
+      !firstAttendance.end_time ||
+      dayjs(firstAttendance.end_time).isAfter(now)
+    );
+
   return (
     <div className="space-y-6 w-full h-full">
       <Card className="shadow-md rounded-lg border-0">
@@ -74,15 +89,25 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
               <UserOutlined /> Giảng viên: <Text strong>{course.teacher_name}</Text>
             </Text>
           </div>
-          
-          <Button 
-            type="primary" 
-            size="large"
-            onClick={handleStartAttendance}
-            className="rounded-lg px-8 py-2 bg-green-600 text-white hover:bg-green-700"
-          >
-            Tạo ca điểm danh
-          </Button>
+          {isOngoingAttendance ? (
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => navigate(`/attendance/${firstAttendance.attendance_id}`)}
+              className="rounded-lg px-8 py-2 bg-yellow-500 text-white hover:bg-yellow-600"
+            >
+              Tiếp tục ca điểm danh
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              size="large"
+              onClick={handleStartAttendance}
+              className="rounded-lg px-8 py-2 bg-green-600 text-white hover:bg-green-700"
+            >
+              Tạo ca điểm danh
+            </Button>
+          )}
         </div>
         
         <Paragraph className="text-gray-600 mb-6">
@@ -168,6 +193,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
               course.attendances.map((attendance: Attendance, idx: number) => (
                 <Col key={attendance.attendance_id || idx} span={8}>
                 <Card
+                  onClick={() => handleOnClickAttendance(attendance.attendance_id)}
                   size="small"
                   className="mb-2 transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg hover:bg-blue-50"
                 >

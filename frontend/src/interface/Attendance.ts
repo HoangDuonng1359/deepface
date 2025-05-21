@@ -14,4 +14,6 @@ export interface Attendance {
     late_time: string;
     end_time: string;
     students: StudentsAttendance[];
+    emotion: any;
+    punctuality: any;
 }

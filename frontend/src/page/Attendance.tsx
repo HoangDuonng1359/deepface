@@ -4,11 +4,13 @@ import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Spin, notification } from 'antd';
+import { Button, Spin, notification, Modal } from 'antd';
 import { CameraOutlined, LoadingOutlined, StopOutlined } from '@ant-design/icons';
 import { Course } from '../interface/Course';
 import * as faceapi from 'face-api.js';
 import { Attendance } from '../interface/Attendance';
+import { useNavigate } from 'react-router-dom';
+import AttendanceInfo from '../components/AttendanceInfo';
 
 // Extend the Window interface to include latestResizedDetections
 declare global {
@@ -32,6 +34,8 @@ const AttendancePage: React.FC = () => {
   const [predictionResult, setPredictionResult] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
+  const navigate = useNavigate();
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   const { attendance_id } = useParams();
   const [course, setCourse] = useState<Course>();
@@ -225,6 +229,28 @@ const AttendancePage: React.FC = () => {
     // eslint-disable-next-line
   }, [modelsLoaded, isCapturing, stream]);
 
+  const endAttendance = async () => {
+    if (attendance?.attendance_id) {
+      try {
+        const res = await fetch(API_ENDPOINTS.ATTENDANCE.END_ATTENDANCE(attendance.attendance_id), {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const result = await res.json();
+        if (result.success) {
+          alert("Kết thúc thành công");
+          navigate('/statistics/' + attendance.attendance_id);
+        } else {
+          alert("Lỗi kết thúc ca điểm danh: " + result.message)
+        }
+      } catch (e) {
+        alert("lỗi" + e);
+      }
+    }
+  }
+
   // Gửi ảnh lên server để dự đoán tuổi
   const sendImageToServer = async (base64Image: string) => {
     setLoading(true);
@@ -308,7 +334,7 @@ const AttendancePage: React.FC = () => {
               icon={isCapturing ? <StopOutlined /> : <CameraOutlined />}
               onClick={isCapturing ? stopCamera : startCamera}
               size="large"
-              className={`transition-all duration-200 rounded-lg px-8 py-2 ${isCapturing ? "bg-red-600 text-white hover:bg-red-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+              className={`transition-all duration-200 rounded-lg px-8 py-2 ${isCapturing ? "bg-red-600 text-red-400 hover:bg-red-700" : "bg-blue-600 text-white hover:bg-blue-700"}`}
               style={{ minWidth: 160, fontWeight: 600 }}
             >
               {isCapturing ? "Dừng Camera" : "Bật Camera"}
@@ -318,6 +344,7 @@ const AttendancePage: React.FC = () => {
               size="large"
               className="rounded-lg px-8 py-2 bg-green-600 text-white hover:bg-green-700"
               style={{ minWidth: 160, fontWeight: 600 }}
+              onClick={() => setConfirmVisible(true)}
             >
               Kết thúc điểm danh
             </Button>
@@ -326,60 +353,7 @@ const AttendancePage: React.FC = () => {
 
         <div className="flex flex-col w-1/2 h-full mx-auto gap-6 px-4">
           {/* Thông tin khoá học */}
-          <div className="p-6 bg-white shadow-md rounded-lg w-full">
-            {course ? (
-              <>
-                <h2 className="text-2xl font-semibold text-center mb-6 text-blue-700">
-                  {course.course_name}
-                </h2>
-
-                <div className="space-y-4 text-base">
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                    {/* Cột 1: Thông tin khoá học */}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">Mã lớp:</span>
-                        <span>{course.course_id}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">Giảng viên:</span>
-                        <span>{course.teacher_name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">Số sinh viên:</span>
-                        <span>{course.students?.length ?? 0}</span>
-                      </div>
-                    </div>
-                    {/* Cột 2: Thông tin ca điểm danh */}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">Mã ca điểm danh:</span>
-                        <span>{attendance?.attendance_id}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">Bắt đầu:</span>
-                        <span>
-                          {attendance?.start_time
-                            ? dayjs(attendance.start_time).format('HH:mm DD/MM/YYYY')
-                            : ''}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">Thời gian trễ:</span>
-                        <span>
-                          {attendance?.late_time
-                            ? dayjs(attendance.late_time).format('HH:mm DD/MM/YYYY')
-                            : ''}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <p className="text-center text-gray-500">Đang tải dữ liệu khoá học...</p>
-            )}
-          </div>
+          <AttendanceInfo course={course} attendance={attendance}></AttendanceInfo>
 
           {/* Kết quả điểm danh */}
           <div className="flex flex-col bg-white rounded-lg shadow p-6 w-full h-full">
@@ -412,6 +386,19 @@ const AttendancePage: React.FC = () => {
             </div>
           </div>
         </div>
+        {/* Modal xác nhận */}
+        <Modal
+          open={confirmVisible}
+          onOk={() => {
+            setConfirmVisible(false);
+            endAttendance();
+          }}
+          onCancel={() => setConfirmVisible(false)}
+          okText="Xác nhận"
+          cancelText="Hủy"
+        >
+          Bạn có chắc chắn muốn kết thúc điểm danh không?
+        </Modal>
       </div>
     </div>
   );
