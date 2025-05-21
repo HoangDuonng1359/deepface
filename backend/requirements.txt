@@ -4,4 +4,9 @@ pymysql
 pydantic
 cryptography
 pytz
+deepface
 pybase64
+tensorflow
+tf-keras
+Pillow
+numpy
