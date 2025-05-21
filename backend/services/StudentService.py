@@ -2,7 +2,7 @@ from drivers.DatabaseDriver import DatabaseConnector
 from drivers.AIDriver import AIDriver
 
 db = DatabaseConnector()
-model = AIDriver([])
+
 
 class StudentService:
 
@@ -57,6 +57,8 @@ class StudentService:
         Tạo sinh viên mới
         """
 
+        model = AIDriver([])
+
         # Tạo sinh viên mới trong bảng students
         sql = """
             INSERT INTO students (student_id, student_name, cohort)
@@ -87,6 +89,8 @@ class StudentService:
         """
         Cập nhật thông tin sinh viên theo ID
         """
+
+        model = AIDriver([])
         
         # Cập nhật thông tin sinh viên trong bảng students
         sql = """
@@ -123,6 +127,9 @@ class StudentService:
         """
         Xóa sinh viên theo ID
         """
+
+        model = AIDriver([])
+
         # Xóa ảnh của sinh viên
         sql = """
             DELETE FROM student_image
