@@ -24,7 +24,7 @@ class AIDriver:
     MODEL                = "Facenet512"
     DISTANCE_METRIC      = "cosine"
     CONFIDENCE_THRESHOLD = 0.9
-    DB_PATH              = 'backend\\drivers\\db_cache'
+    DB_PATH              = 'drivers/db_cache'
     DETECTOR             = "opencv"
     embedding_model      = DeepFace.build_model(MODEL)
 

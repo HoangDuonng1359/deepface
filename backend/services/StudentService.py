@@ -105,7 +105,7 @@ class StudentService:
         params = (student_id,)
         db.query_set(sql, params)
 
-        model.delete_student(student_id)
+        # model.delete_student(student_id)
 
         # Thêm danh sách ảnh đã cập nhật
         sql = """
