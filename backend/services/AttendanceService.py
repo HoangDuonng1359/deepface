@@ -4,28 +4,31 @@ from datetime import datetime
 import pytz
 
 db = DatabaseConnector()
+model = AIDriver([])
+
 timezone = pytz.timezone("Asia/Bangkok")
 
 class AttendanceService:
 
     @staticmethod
-    def create_attendance(course_id: str, late_time: str):
+    def create_attendance(course_id: str, late_time: str = None, end_time: str = None):
         """
             Tạo một ca điểm danh mới và trả về id của ca điểm danh đó.
 
             Parameters:
                 course_id (str): ID của khóa học
                 late_time (str): Ngưỡng thời gian muộn giờ
+                end_time (str): Thời gian kết thúc
 
             Returns:
                 int: ID của ca điểm danh mới tạo
         """
 
         sql = """
-            INSERT INTO attendances (course_id, start_time, late_time)
-            VALUES (%s, %s, %s)     
+            INSERT INTO attendances (course_id, start_time, late_time, end_time)
+            VALUES (%s, %s, %s, %s)     
         """
-        params = (course_id, datetime.now(timezone), late_time)
+        params = (course_id, datetime.now(timezone), late_time, end_time)
         attendance_id = db.query_set(sql, params)
         return attendance_id
 
@@ -122,17 +125,26 @@ class AttendanceService:
         students = [student['student_id'] for student in students]
         
         # Gọi hàm nhận diện khuôn mặt
-        student_id = AIDriver.find(image)
+        student_id = model.find(image)
         if (student_id not in students) or (student_id == "Unknown"):
             return None
         return student_id
 
 
     @staticmethod
-    def checkin_attendance(attendance_id: int, student_id: str, emotion: str, time_now):
-
+    def checkin_attendance(
+        attendance_id: int, 
+        student_id: str, 
+        emotion: str, 
+        time_now
+    ):
+        # Lấy một vài thông tin từ ca điểm danh: thời gian muộn giờ
         attendance = AttendanceService.get_attendance_by_id(attendance_id)
-        status = 'late' if time_now > attendance['late_time'] else 'early'
+        status = 'early'
+        if attendance['late_time'] is not None:
+            late_time = datetime.strptime(attendance['late_time'], "%Y-%m-%d %H:%M:%S")
+            late_time = pytz.timezone("Asia/Bangkok").localize(late_time)
+            status = 'late' if late_time < time_now else 'early'
 
         sql = """
             INSERT INTO student_attendance (attendance_id, student_id, time_in, status, emotion)

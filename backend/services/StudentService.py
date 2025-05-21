@@ -2,7 +2,7 @@ from drivers.DatabaseDriver import DatabaseConnector
 from drivers.AIDriver import AIDriver
 
 db = DatabaseConnector()
-model = AIDriver()
+model = AIDriver([])
 
 class StudentService:
 

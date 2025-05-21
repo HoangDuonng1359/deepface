@@ -3,7 +3,7 @@ import numpy as np
 from deepface import DeepFace
 from deepface.modules import verification
 import tensorflow as tf
-from utils import *
+from drivers.utils import *
 
 class AIDriver:
     # Suppress TensorFlow logging (1 = INFO, 2 = WARNING, 3 = ERROR)

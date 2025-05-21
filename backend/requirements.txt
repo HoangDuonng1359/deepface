@@ -7,5 +7,6 @@ pytz
 deepface
 pybase64
 tensorflow
-pillow
-opencv-python
+tf-keras
+Pillow
+numpy

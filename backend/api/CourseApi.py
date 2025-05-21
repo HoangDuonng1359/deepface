@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+from datetime import datetime
 
 from entities.CourseEntity import (
     CourseCreateRequestEntity, 
@@ -43,6 +44,26 @@ async def get_course_by_id(course_id: str):
         "data": course
     }
 
+
+@router.get("/courses/{course_id}/last_attendance")
+async def get_last_attendance_by_course_id(course_id: str):
+
+    last_attendance = CourseService.get_last_attendance_by_course_id(course_id)
+
+    if last_attendance is None:
+        return {
+            "success": False,
+            "message": f"Không có ca điểm danh nào còn dang dở của lớp {course_id}",
+            "data": None
+        }
+    
+    return {
+        "success": True,
+        "message": "Đã lấy ca điểm danh cuối cùng con dang dở",
+        "data": last_attendance
+    }
+
+
 @router.get("/{course_id}/attendances")
 async def get_attendances_by_course_id(course_id: str):
     """
@@ -65,6 +86,7 @@ async def get_attendances_by_course_id(course_id: str):
         "data": attendances
     }
 
+
 @router.get("/{course_id}/students")
 async def get_students_by_course_id(course_id: str):
     """
@@ -84,6 +106,7 @@ async def get_students_by_course_id(course_id: str):
         "message": "Lấy danh sách sinh viên thành công",
         "data": students
     }
+
 
 @router.post("/")
 async def create_course(new_course: CourseCreateRequestEntity):

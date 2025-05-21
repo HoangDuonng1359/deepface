@@ -26,7 +26,8 @@ async def create_attendance(attendance: AttendanceCreateRequestEntity):
 
     attendance_id = AttendanceService.create_attendance(
         attendance.course_id,
-        attendance.late_time
+        attendance.late_time,
+        attendance.end_time
     )
 
     if attendance_id is not None:
