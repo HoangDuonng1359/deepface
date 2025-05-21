@@ -62,6 +62,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
     setIsModalOpen(false);
   };
 
+  const handleOnClickAttendance = (attendance_id:number) => {
+     navigate('/statistics/' + attendance_id);
+  };
+
   // Kiểm tra attendance đầu tiên
   const firstAttendance = course.attendances && course.attendances.length > 0 ? course.attendances[0] : null;
   const now = dayjs();
@@ -189,6 +193,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
               course.attendances.map((attendance: Attendance, idx: number) => (
                 <Col key={attendance.attendance_id || idx} span={8}>
                 <Card
+                  onClick={() => handleOnClickAttendance(attendance.attendance_id)}
                   size="small"
                   className="mb-2 transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg hover:bg-blue-50"
                 >

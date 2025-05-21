@@ -89,6 +89,7 @@ class CourseService:
             SELECT 
                 a.attendance_id AS attendance_id,
                 a.start_time AS start_time,
+                a.late_time AS last_time,
                 a.end_time AS end_time
             FROM courses c
             JOIN attendances a

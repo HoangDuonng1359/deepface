@@ -9,6 +9,7 @@ import Dashboard from './page/Dashboard';
 import Attendance from './page/Attendance';
 
 import { useEffect } from 'react';
+import StatisticPage from './page/Statistics';
 
 
 
@@ -23,6 +24,7 @@ function App() {
           <Route path='/FacialAttendance' element = {<FacialAttendance></FacialAttendance>} ></Route>
           <Route path= '/deepface' element = {<DeepFacePage></DeepFacePage>}></Route>
           <Route path='/attendance/:attendance_id' element = {<Attendance></Attendance>}></Route>
+          <Route path ='/statistics/:attendance_id' element={<StatisticPage/>}></Route>
         </Routes>
       </BrowserRouter>
   );
