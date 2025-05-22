@@ -1077,31 +1077,41 @@ async function exportClassToPDF() {
     }
 
     try {
-        const res = await fetch(`http://localhost:8000/api/courses/${currentCourseId}/students`);
-        let json;
-        try {
-            json = await res.json();
-        } catch (e) {
-            console.error("Phản hồi không phải JSON:", e);
-            alert("Phản hồi từ server không hợp lệ.");
+        // 🔹 Lấy thông tin lớp học
+        const courseRes = await fetch(`http://localhost:8000/api/courses/${currentCourseId}`);
+        const courseJson = await courseRes.json();
+        if (!courseJson.success || !courseJson.data) {
+            alert("Không lấy được thông tin lớp học.");
             return;
         }
+        const course = courseJson.data;
 
-        if (!json || !json.success || !Array.isArray(json.data)) {
+        // 🔹 Lấy danh sách sinh viên
+        const res = await fetch(`http://localhost:8000/api/courses/${currentCourseId}/students`);
+        const json = await res.json();
+        if (!json.success || !Array.isArray(json.data)) {
             alert("Không thể lấy danh sách sinh viên.");
             return;
         }
 
         const students = json.data;
 
-        // Khởi tạo tài liệu PDF
+        // 🔹 Khởi tạo tài liệu PDF
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.setFont("DejaVuSans");
         doc.setFontSize(16);
-        doc.text("Danh sách sinh viên lớp " + currentCourseId, 14, 20);
 
-        // Chuẩn bị dữ liệu bảng
+        // 🔹 Tiêu đề
+        doc.text("DANH SÁCH SINH VIÊN LỚP HỌC", 14, 20);
+
+        // 🔹 Thông tin lớp
+        doc.setFontSize(12);
+        doc.text(`Mã lớp: ${course.course_id}`, 14, 30);
+        doc.text(`Tên môn học: ${course.course_name}`, 14, 38);
+        doc.text(`Giảng viên: ${course.teacher_name}`, 14, 46);
+
+        // 🔹 Dữ liệu bảng
         const headers = [
             ["MSSV", "Họ và tên", "Niên khóa", "Đi muộn", "Đến sớm", "Vắng", "Vui", "Buồn", "Bình thản", "Ngạc nhiên", "Tức giận", "Kinh tởm", "Sợ hãi"]
         ];
@@ -1109,36 +1119,37 @@ async function exportClassToPDF() {
         const rows = students.map(s => [
             s.student_id,
             s.student_name,
-            s.cohort,
-            s.late,
-            s.early,
-            s.absent,
-            s.happy,
-            s.sad,
-            s.neutral,
-            s.suprise,
-            s.angry,
-            s.disgust,
-            s.fear
+            s.cohort || "",
+            s.late || 0,
+            s.early || 0,
+            s.absent || 0,
+            s.happy || 0,
+            s.sad || 0,
+            s.neutral || 0,
+            s.suprise || 0,
+            s.angry || 0,
+            s.disgust || 0,
+            s.fear || 0
         ]);
 
         doc.autoTable({
             head: headers,
             body: rows,
-            startY: 30,
+            startY: 54,
             styles: {
-                font: "DejaVuSans",  // ❗ BẮT BUỘC
+                font: "DejaVuSans",
                 fontSize: 10
             }
         });
-        
-        // Lưu file
+
+        // 🔹 Xuất file
         doc.save(`danhsach_${currentCourseId}.pdf`);
     } catch (err) {
         console.error("Lỗi khi xuất PDF:", err);
         alert("Không thể kết nối tới máy chủ.");
     }
 }
+
 
 function openPhotoOptionMenu(event) {
 
