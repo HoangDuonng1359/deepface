@@ -6,6 +6,10 @@ import tensorflow as tf
 from drivers.utils import *
 
 class AIDriver:
+    # Suppress TensorFlow logging (1 = INFO, 2 = WARNING, 3 = ERROR)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    tf.get_logger().setLevel('ERROR')
+
     # Attempt to set memory growth for GPUs to avoid TensorFlow allocating all memory at once
     try:
         gpus = tf.config.list_physical_devices('GPU')
@@ -13,13 +17,16 @@ class AIDriver:
             for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
     except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
         print(f"Could not set memory growth for GPU (may already be initialized): {e}")
 
+    # ——— Class-wide constants ———
     MODEL                = "Facenet512"
     DISTANCE_METRIC      = "cosine"
     CONFIDENCE_THRESHOLD = 0.9
     DB_PATH              = 'drivers/db_cache'
     DETECTOR             = "opencv"
+    embedding_model      = DeepFace.build_model(MODEL)
 
     def __init__(self, compare_images: list):
         """
@@ -46,7 +53,7 @@ class AIDriver:
                 detector_backend=self.DETECTOR
             )[0]["embedding"]
 
-            # Compute distances using cosine
+            # Compute distances using updated function
             dists = verification.find_cosine_distance(self.embeddings_matrix, rep_target)
             best_idx = np.argmin(dists)
             if dists[best_idx] < self.CONFIDENCE_THRESHOLD:
@@ -79,14 +86,7 @@ class AIDriver:
 
         if new_embeddings:
             new_mat = np.vstack(new_embeddings)
-            if self.embeddings_matrix is None:
-                # First time adding anything
-                self.embeddings_matrix = new_mat
-                self.ids_list = [student_id] * len(new_embeddings)
-            else:
-                self.embeddings_matrix = np.vstack([self.embeddings_matrix, new_mat])
-                self.ids_list.extend([student_id] * len(new_embeddings))
-
+            self.embeddings_matrix = np.vstack([self.embeddings_matrix, new_mat])
             np.savez(
                 os.path.join(self.DB_PATH, "face_data.npz"),
                 embeddings=self.embeddings_matrix,

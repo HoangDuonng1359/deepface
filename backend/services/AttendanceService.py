@@ -4,7 +4,7 @@ from datetime import datetime
 import pytz
 
 db = DatabaseConnector()
-model = AIDriver([])
+
 
 timezone = pytz.timezone("Asia/Bangkok")
 
@@ -121,7 +121,7 @@ class AttendanceService:
         """
             Khi biết một ca điểm danh và bức ảnh được gửi lên, hãy nhận diện và trả về danh tính sinh viên.
         """
-        
+        model = AIDriver([])
         # Lấy danh sách ảnh của sinh viên trong ca điểm danh
         sql = """
             SELECT 
