@@ -40,6 +40,8 @@ const AttendancePage: React.FC = () => {
   const { attendance_id } = useParams();
   const [course, setCourse] = useState<Course>();
   const [attendance, setAttendance] = useState<Attendance>();
+  const [emotion, setEmotion] = useState<string | undefined>();
+  const [imageBase64, setImageBase64] = useState<string>();
 
   // Fetch attendance and course info
   useEffect(() => {
@@ -160,15 +162,27 @@ const AttendancePage: React.FC = () => {
           .withFaceLandmarks()
           .withFaceExpressions();
 
+        // Lấy cảm xúc lớn nhất của khuôn mặt đầu tiên (nếu có)
+        if (detections.length > 0 && detections[0].expressions) {
+          const expressions = detections[0].expressions;
+          const maxEmotion = Object.keys(expressions).reduce((a, b) =>
+            ((expressions as unknown) as Record<string, number>)[a] > ((expressions as unknown) as Record<string, number>)[b] ? a : b
+          );
+          setEmotion(maxEmotion);
+        }
+
+        // Resize kết quả nhận diện cho đúng kích thước canvas
         const resizedDetections = faceapi.resizeResults(detections, {
-          width: displaySize.width,
-          height: displaySize.height,
+          width: canvas.width,
+          height: canvas.height,
         });
 
+        // Xóa canvas trước khi vẽ mới
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Vẽ bounding box và landmarks
         faceapi.draw.drawDetections(canvas, resizedDetections);
         faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-        faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
 
         window.latestResizedDetections = resizedDetections;
       }, 100);
@@ -195,19 +209,20 @@ const AttendancePage: React.FC = () => {
 
         if (isNewFaceDetected()) {
           lastSentBoxes = currentBoxes;
-          (resizedDetections as any[]).forEach((detection, i) => {
-            const { x, y, width, height } = detection.detection.box;
-            const faceCanvas: HTMLCanvasElement = document.createElement("canvas");
-            faceCanvas.width = width;
-            faceCanvas.height = height;
-            const faceCtx = faceCanvas.getContext("2d");
-            if (faceCtx && videoRef.current) {
-              faceCtx.drawImage(videoRef.current, x, y, width, height, 0, 0, width, height);
-              const base64Face: string = faceCanvas.toDataURL("image/jpeg");
-              sendImageToServer(base64Face);
-              // console.log(`Gửi khuôn mặt ${i + 1}`);
+          // Gửi toàn bộ frame video thay vì cắt khuôn mặt
+          if (videoRef.current) {
+            const video = videoRef.current;
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
+            const tempCtx = tempCanvas.getContext("2d");
+            if (tempCtx) {
+              tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+              const base64Frame = tempCanvas.toDataURL("image/jpeg");
+              setImageBase64(base64Frame);
+              sendImageToServer(base64Frame);
             }
-          });
+          }
         }
       }, 2000);
 
@@ -253,30 +268,46 @@ const AttendancePage: React.FC = () => {
 
   // Gửi ảnh lên server để dự đoán tuổi
   const sendImageToServer = async (base64Image: string) => {
+    if (!attendance?.attendance_id) {
+      notification.error({
+        message: 'Lỗi điểm danh',
+        description: 'Không tìm thấy mã ca điểm danh.',
+      });
+      return;
+    }
     setLoading(true);
-    try {
-      // Cắt bỏ tiền tố 'data:image/jpeg;base64,...'
-      const pureBase64 = base64Image.split(',')[1];
 
-      const response = await fetch('http://localhost:5000/predict_age', {
-        method: 'POST',
+    // Cắt bỏ tiền tố 'data:image/jpeg;base64,...'
+    const pureBase64 = base64Image.split(',')[1];
+
+    if (!emotion || !pureBase64) {
+      console.log("Thiếu dữ liệu")
+      setLoading(false);
+      return;
+    }
+
+    try {
+      console.log('Gửi lên:', { emotion, image: pureBase64 });
+      const response = await fetch(API_ENDPOINTS.ATTENDANCE.SEND_ATTENDANCE(attendance.attendance_id), {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image: pureBase64 }), // Gửi base64 thuần
+        body: JSON.stringify({ emotion, image: pureBase64 }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data)
         setPredictionResult(data);
       } else {
-        throw new Error('Failed to get prediction');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to get prediction');
       }
     } catch (error) {
-      console.error('Error sending image to server:', error);
       notification.error({
         message: 'Lỗi Dự Đoán',
-        description: 'Không thể lấy kết quả dự đoán từ server.',
+        description: String(error),
       });
     } finally {
       setLoading(false);
@@ -377,10 +408,14 @@ const AttendancePage: React.FC = () => {
                   <div className="mt-2 text-gray-600 text-sm">
                     Cập nhật lần cuối: {new Date().toLocaleTimeString()}
                   </div>
+                  <div>
+                    <img src={imageBase64}></img>
+                  </div>
                 </div>
               ) : (
                 <div className="text-gray-500 text-center">
-                  Chưa có dữ liệu. Đang chờ kết quả từ camera...
+                  <div>Chưa có dữ liệu. Đang chờ kết quả từ camera...</div>
+                  <img src={imageBase64}></img>
                 </div>
               )}
             </div>

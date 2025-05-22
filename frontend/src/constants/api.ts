@@ -13,9 +13,10 @@ export const API_ENDPOINTS = {
     MODEL : {
         PREDICT_AGE: `${BASE_URL_MODEL}/predict_age`,
     },
-    ATTENDANCE :{
+    ATTENDANCE : {
         CREATE_ATTENDANCE: `${BASE_URL_BE}/attendance`,
         GET_BY_ID: (attendance_id: string) => `${BASE_URL_BE}/attendance/${attendance_id}`,
-        END_ATTENDANCE: (attendance_id: number) =>  `${BASE_URL_BE}/attendance/${attendance_id}/end`
+        END_ATTENDANCE: (attendance_id: number) =>  `${BASE_URL_BE}/attendance/${attendance_id}/end`,
+        SEND_ATTENDANCE: (attendance_id: number) => `${BASE_URL_BE}/attendance/${attendance_id}`
     }
 }
