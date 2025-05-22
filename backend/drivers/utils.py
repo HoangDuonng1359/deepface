@@ -16,7 +16,7 @@ def embed_single_image(student_id, base64_img):
     img = decode_base64_image(base64_img)
     rep = DeepFace.represent(
         img_path=img,
-        model="Facenet512",
+        model_name="Facenet512",
         enforce_detection=False,
         detector_backend='opencv'
     )[0]["embedding"]
@@ -34,7 +34,7 @@ def build_face_database(compare_images, db_path):
     embeddings = []
     ids = []
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         futures = [
             executor.submit(embed_single_image, item["student_id"], item["image"]) 
             for item in compare_images
@@ -47,6 +47,9 @@ def build_face_database(compare_images, db_path):
                 ids.append(student_id)
             except Exception as e:
                 print(f"Failed to embed an image: {e}")
+
+    if not embeddings:
+        return None, None
 
     embeddings_matrix = np.vstack(embeddings)
     ids_array = np.array(ids, dtype=object)
@@ -78,35 +81,3 @@ def base64_to_rgb(base64_str : str):
     img_rgb = np.array(img)
 
     return img_rgb
-
-def find_input_shape(model):
-    """Find input shape of the model"""
-    # For most models in DeepFace
-    if len(model.inputs[0].shape) == 4:
-        input_shape = tuple((model.inputs[0].shape[1:3]))  # h, w
-    else:
-        input_shape = model.inputs[0].shape[1:3]
-    
-    if input_shape[0] == None:
-        input_shape = (224, 224)  # Default
-    
-    return input_shape
-
-def normalize_input(img, normalization="base"):
-    """Normalize input based on the normalization type"""
-    if normalization == "base":
-        # Scale pixel values to [0, 1]
-        return img / 255.0
-    
-    elif normalization == "raw":
-        return img
-    
-    elif normalization == "facenet":
-        # Facenet expects inputs in [-1, 1]
-        mean = np.mean(img, axis=(0, 1, 2), keepdims=True)
-        std = np.std(img, axis=(0, 1, 2), keepdims=True)
-        std_adj = np.maximum(std, 1.0/np.sqrt(img.size))
-        return (img - mean) / std_adj
-    
-    else:
-        raise ValueError(f"Unsupported normalization type: {normalization}")
