@@ -1,5 +1,7 @@
 from drivers.DatabaseDriver import DatabaseConnector
 from services.AttendanceService import AttendanceService
+from datetime import datetime
+import pytz
 
 db = DatabaseConnector()
 
@@ -87,6 +89,7 @@ class CourseService:
             SELECT 
                 a.attendance_id AS attendance_id,
                 a.start_time AS start_time,
+                a.late_time AS last_time,
                 a.end_time AS end_time
             FROM courses c
             JOIN attendances a
@@ -174,3 +177,26 @@ class CourseService:
         sql = "DELETE FROM courses WHERE course_id = %s"
         params = (course_id,)
         db.query_set(sql, params)
+
+    @staticmethod
+    def get_last_attendance_by_course_id(course_id: str):
+        sql = """
+            SELECT 
+                a.attendance_id AS attendance_id,
+                a.end_time AS end_time
+            FROM courses c
+            JOIN attendances a
+                ON c.course_id = a.course_id
+            WHERE c.course_id = %s
+            ORDER BY a.attendance_id DESC 
+            LIMIT 1
+        """
+        params = (course_id,)
+        last_attendance = db.query_get(sql, params, limit=1)
+
+        end_time = datetime.strptime(last_attendance['end_time'], "%Y-%m-%d %H:%M:%S")
+        time_now = datetime.now(pytz.timezone("Asia/Ho_Chi_Minh"))
+        if (last_attendance is None) or (time_now > end_time):
+            return None
+        elif time_now < end_time:
+            return last_attendance

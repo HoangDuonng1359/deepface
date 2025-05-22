@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from api import CourseApi, StudentApi, AttendanceApi
+from api import CourseApi, StudentApi, AttendanceApi, ModelTestApi
 
 app = FastAPI(
     title="Deepface API",
@@ -12,10 +12,9 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-# ✅ Thêm đoạn này để cho phép frontend truy cập API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # có thể thay "*" bằng ["http://frontend_admin"] nếu cần bảo mật hơn
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,3 +24,4 @@ app.add_middleware(
 app.include_router(CourseApi.router)
 app.include_router(StudentApi.router)
 app.include_router(AttendanceApi.router)
+app.include_router(ModelTestApi.router)

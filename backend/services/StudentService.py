@@ -1,6 +1,8 @@
 from drivers.DatabaseDriver import DatabaseConnector
+from drivers.AIDriver import AIDriver
 
 db = DatabaseConnector()
+
 
 class StudentService:
 
@@ -55,6 +57,8 @@ class StudentService:
         Tạo sinh viên mới
         """
 
+        model = AIDriver([])
+
         # Tạo sinh viên mới trong bảng students
         sql = """
             INSERT INTO students (student_id, student_name, cohort)
@@ -72,17 +76,8 @@ class StudentService:
             params = (student_id, image)
             db.query_set(sql, params)
 
-    @staticmethod
-    def add_image_for_student(student_id: str, image: str):
-        """
-        Thêm ảnh cho sinh viên
-        """
-        sql = """
-            INSERT INTO student_image (student_id, image) 
-            VALUES (%s, %s)
-        """
-        params = (student_id, image)
-        db.query_set(sql, params)
+        # Thêm sinh viên vào model AI
+        model.add_student(student_id, images)
     
     @staticmethod
     def update_student(
@@ -94,6 +89,8 @@ class StudentService:
         """
         Cập nhật thông tin sinh viên theo ID
         """
+
+        model = AIDriver([])
         
         # Cập nhật thông tin sinh viên trong bảng students
         sql = """
@@ -112,6 +109,8 @@ class StudentService:
         params = (student_id,)
         db.query_set(sql, params)
 
+        model.delete_student(student_id)
+
         # Thêm danh sách ảnh đã cập nhật
         sql = """
             INSERT INTO student_image (student_id, image) 
@@ -120,12 +119,17 @@ class StudentService:
         for image in images:
             params = (student_id, image)
             db.query_set(sql, params)
+        
+        model.add_student(student_id, images)
 
     @staticmethod
     def delete_student(student_id: int):
         """
         Xóa sinh viên theo ID
         """
+
+        model = AIDriver([])
+
         # Xóa ảnh của sinh viên
         sql = """
             DELETE FROM student_image
@@ -142,4 +146,4 @@ class StudentService:
         params = (student_id,)
         db.query_set(sql, params)
 
-
+        model.delete_student(student_id)
