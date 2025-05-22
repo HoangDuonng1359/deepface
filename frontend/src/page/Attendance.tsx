@@ -466,6 +466,12 @@ useEffect(() => {
                 <div className="text-gray-500 text-center">
                   <div>Chưa có dữ liệu. Đang chờ kết quả từ camera...</div>
                   <div>{predictionResult?.message}</div>
+                  <img
+                        src={imageBase64}
+                        alt="Khuôn mặt nhận diện"
+                        className="rounded-lg border border-gray-300 shadow w-24 h-24 object-cover"
+                        style={{ maxWidth: 96, maxHeight: 96 }}
+                      />
                 </div>
               )}
             </div>
