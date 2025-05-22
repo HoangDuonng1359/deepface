@@ -1,14 +1,13 @@
 import Header from '../components/Header';
 import { API_ENDPOINTS } from "../constants/api";
 import { useParams } from 'react-router-dom';
-import dayjs from 'dayjs';
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Spin, notification, Modal } from 'antd';
 import { CameraOutlined, LoadingOutlined, StopOutlined } from '@ant-design/icons';
 import { Course } from '../interface/Course';
 import * as faceapi from 'face-api.js';
-import { Attendance } from '../interface/Attendance';
+import { Attendance, StudentsAttendance } from '../interface/Attendance';
 import { useNavigate } from 'react-router-dom';
 import AttendanceInfo from '../components/AttendanceInfo';
 
@@ -20,8 +19,9 @@ declare global {
 }
 
 interface PredictionResult {
-  id: number;
-  name: string;
+  success: boolean;
+  message: string;
+  data: StudentsAttendance;
 }
 
 const AttendancePage: React.FC = () => {
@@ -40,7 +40,6 @@ const AttendancePage: React.FC = () => {
   const { attendance_id } = useParams();
   const [course, setCourse] = useState<Course>();
   const [attendance, setAttendance] = useState<Attendance>();
-  const [emotion, setEmotion] = useState<string | undefined>();
   const [imageBase64, setImageBase64] = useState<string>();
 
   // Fetch attendance and course info
@@ -130,8 +129,13 @@ const AttendancePage: React.FC = () => {
     return () => {
       stopCamera();
     };
-    // eslint-disable-next-line
   }, []);
+
+useEffect(() => {
+  if (modelsLoaded) {
+    startCamera();
+  }
+}, [modelsLoaded]);
 
   // Start/stop camera and detection based on isCapturing and modelsLoaded
   useEffect(() => {
@@ -162,15 +166,6 @@ const AttendancePage: React.FC = () => {
           .withFaceLandmarks()
           .withFaceExpressions();
 
-        // Lấy cảm xúc lớn nhất của khuôn mặt đầu tiên (nếu có)
-        if (detections.length > 0 && detections[0].expressions) {
-          const expressions = detections[0].expressions;
-          const maxEmotion = Object.keys(expressions).reduce((a, b) =>
-            ((expressions as unknown) as Record<string, number>)[a] > ((expressions as unknown) as Record<string, number>)[b] ? a : b
-          );
-          setEmotion(maxEmotion);
-        }
-
         // Resize kết quả nhận diện cho đúng kích thước canvas
         const resizedDetections = faceapi.resizeResults(detections, {
           width: canvas.width,
@@ -183,6 +178,26 @@ const AttendancePage: React.FC = () => {
         // Vẽ bounding box và landmarks
         faceapi.draw.drawDetections(canvas, resizedDetections);
         faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+
+        // Vẽ cảm xúc lên canvas
+        resizedDetections.forEach((detection: any) => {
+          const { x, y, height } = detection.detection.box;
+          const expressions = detection.expressions;
+          if (expressions) {
+            // Tìm cảm xúc lớn nhất
+            const maxEmotion = Object.keys(expressions).reduce((a, b) =>
+              expressions[a] > expressions[b] ? a : b
+            );
+            const maxValue = expressions[maxEmotion];
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "#1890ff";
+            ctx.fillText(
+              `${maxEmotion} (${(maxValue * 100).toFixed(0)}%)`,
+              x,
+              y + height + 24 
+            );
+          }
+        });
 
         window.latestResizedDetections = resizedDetections;
       }, 100);
@@ -209,7 +224,15 @@ const AttendancePage: React.FC = () => {
 
         if (isNewFaceDetected()) {
           lastSentBoxes = currentBoxes;
-          // Gửi toàn bộ frame video thay vì cắt khuôn mặt
+          // Lấy emotion mạnh nhất tại thời điểm này
+          let detectedEmotion = '';
+          if (resizedDetections.length > 0 && resizedDetections[0].expressions) {
+            const expressions = resizedDetections[0].expressions;
+            detectedEmotion = Object.keys(expressions).reduce((a, b) =>
+              expressions[a] > expressions[b] ? a : b
+            );
+          }
+          // Gửi toàn bộ frame video cùng emotion
           if (videoRef.current) {
             const video = videoRef.current;
             const tempCanvas = document.createElement("canvas");
@@ -220,7 +243,7 @@ const AttendancePage: React.FC = () => {
               tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
               const base64Frame = tempCanvas.toDataURL("image/jpeg");
               setImageBase64(base64Frame);
-              sendImageToServer(base64Frame);
+              sendImageToServer(detectedEmotion, base64Frame); 
             }
           }
         }
@@ -267,7 +290,7 @@ const AttendancePage: React.FC = () => {
   }
 
   // Gửi ảnh lên server để dự đoán tuổi
-  const sendImageToServer = async (base64Image: string) => {
+  const sendImageToServer = async (emotion: string, base64Image: string) => {
     if (!attendance?.attendance_id) {
       notification.error({
         message: 'Lỗi điểm danh',
@@ -279,13 +302,6 @@ const AttendancePage: React.FC = () => {
 
     // Cắt bỏ tiền tố 'data:image/jpeg;base64,...'
     const pureBase64 = base64Image.split(',')[1];
-
-    if (!emotion || !pureBase64) {
-      console.log("Thiếu dữ liệu")
-      setLoading(false);
-      return;
-    }
-
     try {
       console.log('Gửi lên:', { emotion, image: pureBase64 });
       const response = await fetch(API_ENDPOINTS.ATTENDANCE.SEND_ATTENDANCE(attendance.attendance_id), {
@@ -397,25 +413,59 @@ const AttendancePage: React.FC = () => {
                   indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />}
                   tip="Đang xử lý..."
                 />
-              ) : predictionResult ? (
-                <div className="text-center space-y-3">
-                  <div className="text-3xl font-bold text-blue-600">
-                    {predictionResult.name}
-                  </div>
-                  <div className="text-4xl font-bold text-blue-600">
-                    Mã sinh viên: {predictionResult.id}
-                  </div>
-                  <div className="mt-2 text-gray-600 text-sm">
-                    Cập nhật lần cuối: {new Date().toLocaleTimeString()}
-                  </div>
-                  <div>
-                    <img src={imageBase64}></img>
+              ) : predictionResult && predictionResult.data ? (
+                <div className="text-center space-y-3 p-4 rounded-lg border border-blue-200 bg-blue-50 shadow-sm">
+                  <div className="flex items-center justify-center gap-6">
+                    {/* Ảnh khuôn mặt bên trái */}
+                    <div className="flex-shrink-0 flex justify-center items-center">
+                      <img
+                        src={imageBase64}
+                        alt="Khuôn mặt nhận diện"
+                        className="rounded-lg border border-gray-300 shadow w-24 h-24 object-cover"
+                        style={{ maxWidth: 96, maxHeight: 96 }}
+                      />
+                    </div>
+                    {/* Thông tin kết quả bên phải */}
+                    <div className="flex flex-col items-start space-y-2 text-left">
+                      <div className="text-lg font-semibold text-green-700">{predictionResult.message}</div>
+                      <div className="text-base font-bold text-blue-800">{predictionResult.data.student_name}</div>
+                      <div className="text-sm font-medium text-blue-700">
+                        Mã sinh viên: <span className="font-semibold">{predictionResult.data.student_id}</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-semibold text-indigo-600">Tâm trạng:</span>
+                        <span className="ml-2 text-indigo-800">{predictionResult.data.emotion}</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-semibold text-gray-600">Vào lúc:</span>
+                        <span className="ml-2 text-gray-800">
+                          {predictionResult.data.time_in
+                            ? new Date(predictionResult.data.time_in).toLocaleString('vi-VN', {
+                                hour12: false,
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                              })
+                            : ''}
+                        </span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-semibold text-gray-600">Trạng thái:</span>
+                        <span className="ml-2 text-gray-800">{predictionResult.data.status}</span>
+                      </div>
+                      <div className="text-gray-500 text-xs mt-1">
+                        Cập nhật: {new Date().toLocaleTimeString()}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-gray-500 text-center">
                   <div>Chưa có dữ liệu. Đang chờ kết quả từ camera...</div>
-                  <img src={imageBase64}></img>
+                  <div>{predictionResult?.message}</div>
                 </div>
               )}
             </div>
