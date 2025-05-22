@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Typography, Button, Tag, Divider, Row, Col, Statistic, Modal, Result, Segmented, Avatar, Form, Input, DatePicker, TimePicker, message } from 'antd';
 import { UserOutlined, ClockCircleOutlined, CalendarOutlined, TeamOutlined, BarcodeOutlined } from '@ant-design/icons';
 import { Course, Student } from '../interface/Course';
@@ -28,6 +28,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
       end_time: null,
     });
   };
+
+  useEffect(() => {
+    console.log(course);
+  },[])
 
   const handleModalOk = () => {
     form
@@ -156,7 +160,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
           {segmented_value === 'Sinh viên' ? (
             <Row gutter={[16, 16]} className='pt-2'>
               {course.students && course.students.length > 0 ? (
-              course.students.map((student: Student) => (
+              course.students.map((student:any) => (
                 <Col key={student.student_id} span={8}>
                 <Card
                   size="small"
@@ -177,6 +181,9 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
                   </div>
                   <div className="text-xs text-gray-500">Mã sinh viên: {student.student_id}</div>
                   <div className='text-xs text-gray-500'>Khóa học: {student.cohort}</div>
+                  <div className='text-xs text-gray-500'>Đến sớm: {student.early}</div>
+                  <div className='text-xs text-gray-500'>Đến muộn: {student.late}</div>
+                  <div className='text-xs text-gray-500'>Vắng: {student.absent}</div>
                   <div style={{ marginTop: 8 }}></div>
                 </Card>
                 </Col>
@@ -206,6 +213,9 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
                     </div>
                     <div className="text-xs text-gray-500">
                     Kết thúc: {attendance.end_time ? new Date(attendance.end_time).toLocaleString('vi-VN', { hour12: false }) : 'Không rõ'}
+                    <div className="text-xs text-gray-500">Đến sớm: {attendance.punctuality[0].early}</div>
+                    <div className="text-xs text-gray-500">Đến muộn: {attendance.punctuality[0].late}</div>
+                    <div className="text-xs text-gray-500">Vắng mặt: {attendance.punctuality[0].absent}</div>
                   </div>
                   <div className="text-xs text-gray-500"> Số học sinh tham gia: {attendance.students.length}</div>
                 </Card>

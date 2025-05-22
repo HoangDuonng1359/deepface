@@ -28,6 +28,7 @@ const StatisticPage: React.FC = () => {
           const foundAttendance = data_course.data.find(
             (att: Attendance) => String(att.attendance_id) === String(attendance_id)
           );
+          console.log(foundAttendance);
           setAttendance(foundAttendance);
         } else {
           setAttendance(undefined);
@@ -124,9 +125,19 @@ const moodStats = (() => {
                   description={
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="text-gray-600">Mã SV: {item.student_id}</span>
-                      {item.status && (
+                      {item.status === 'late' && (
                         <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 flex items-center gap-1">
                           <ClockCircleOutlined /> Đi học muộn
+                        </span>
+                      )}
+                      {item.status === 'early' && (
+                        <span className="px-2 py-0.5 rounded bg-green-100 text-green-700 flex items-center gap-1">
+                          <SmileOutlined /> Đúng giờ
+                        </span>
+                      )}
+                      {(item.status === null || item.status === 'absent') && (
+                        <span className="px-2 py-0.5 rounded bg-gray-200 text-gray-500 flex items-center gap-1">
+                          <FrownOutlined /> Chưa điểm danh
                         </span>
                       )}
                       {item.emotion === 'happy' && (
