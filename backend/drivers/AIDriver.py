@@ -17,7 +17,7 @@ class AIDriver:
 
     MODEL                = "Facenet512"
     DISTANCE_METRIC      = "cosine"
-    CONFIDENCE_THRESHOLD = 0.9
+    CONFIDENCE_THRESHOLD = 0.8
     DB_PATH              = 'backend\\drivers\\db_cache'
     DETECTOR             = "opencv"
 
@@ -48,6 +48,7 @@ class AIDriver:
 
             # Compute distances using cosine
             dists = verification.find_cosine_distance(self.embeddings_matrix, rep_target)
+            print("Dists:", dists)
             best_idx = np.argmin(dists)
             if dists[best_idx] < self.CONFIDENCE_THRESHOLD:
                 return self.ids_list[best_idx]
