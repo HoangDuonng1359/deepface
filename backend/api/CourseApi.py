@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+from datetime import datetime
 
 from entities.CourseEntity import (
     CourseCreateRequestEntity, 
@@ -7,6 +8,7 @@ from entities.CourseEntity import (
 )
 
 from services.CourseService import CourseService
+from services.StudentService import StudentService
 
 router = APIRouter(prefix="/api/courses", tags=["courses"])
 
@@ -24,7 +26,7 @@ async def get_all_courses():
 
 
 @router.get("/{course_id}")
-async def get_course(course_id: str):
+async def get_course_by_id(course_id: str):
     """
     Lấy thông tin lớp học theo ID
     """
@@ -32,7 +34,7 @@ async def get_course(course_id: str):
     if course is None:
         return {
             "success": False,
-            "message": "Lớp học không tồn tại",
+            "message": f"Không tìm thấy lớp có mã {course_id}",
             "data": None
         }
 
@@ -42,11 +44,77 @@ async def get_course(course_id: str):
         "data": course
     }
 
+
+@router.get("/courses/{course_id}/last_attendance")
+async def get_last_attendance_by_course_id(course_id: str):
+
+    last_attendance = CourseService.get_last_attendance_by_course_id(course_id)
+
+    if last_attendance is None:
+        return {
+            "success": False,
+            "message": f"Không có ca điểm danh nào còn dang dở của lớp {course_id}",
+            "data": None
+        }
+    
+    return {
+        "success": True,
+        "message": "Đã lấy ca điểm danh cuối cùng con dang dở",
+        "data": last_attendance
+    }
+
+
+@router.get("/{course_id}/attendances")
+async def get_attendances_by_course_id(course_id: str):
+    """
+        Lấy lịch sử điểm danh của một lớp học
+    """
+    
+    course = CourseService.get_course_by_id(course_id)
+    if course is None:
+        return {
+            "success": False,
+            "message": f"Không tìm thấy lớp có mã {course_id}",
+            "data": None
+        }
+    
+    attendances = CourseService.get_attendances_by_course_id(course_id)
+
+    return {
+        "success": True,
+        "message": "Lấy lịch sử điểm danh thành công",
+        "data": attendances
+    }
+
+
+@router.get("/{course_id}/students")
+async def get_students_by_course_id(course_id: str):
+    """
+    Lấy danh sách sinh viên trong một lớp học
+    """
+    course = CourseService.get_course_by_id(course_id)
+    if course is None:
+        return {
+            "success": False,
+            "message": f"Không tìm thấy lớp có mã {course_id}",
+            "data": None
+        }
+
+    students = CourseService.get_students_by_course_id(course_id)
+    return {
+        "success": True,
+        "message": "Lấy danh sách sinh viên thành công",
+        "data": students
+    }
+
+
 @router.post("/")
 async def create_course(new_course: CourseCreateRequestEntity):
     """
     Tạo lớp học mới
     """
+
+    # Kiểm tra xem lớp học đã tồn tại hay chưa
     course = CourseService.get_course_by_id(new_course.course_id)
     if course is not None:
         return {
@@ -54,7 +122,17 @@ async def create_course(new_course: CourseCreateRequestEntity):
             "message": "Lớp học đã tồn tại",
             "data": course
         }
+    # Kiểm tra xem sinh viên đã tồn tại hay chưa
+    for student_id in new_course.students:
+        student_in_course = StudentService.get_student_by_id(student_id)
+        if student_in_course is None:
+            return {
+                "success": False,
+                "message": f"Sinh viên có mã {student_id} không tồn tại",
+                "data": None
+            }
 
+    # Tạo lớp học mới
     CourseService.create_course(
         new_course.course_id, 
         new_course.course_name, 

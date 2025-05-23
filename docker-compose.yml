@@ -1,14 +1,14 @@
 version: '3.9'
 
 services:
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #   ports:
-  #     - "3000:80"
-  #   depends_on:
-  #     - model
-  #     - database
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+      - database
   frontend_admin:
     build:
       context: ./frontend_admin
@@ -33,6 +33,11 @@ services:
       - ./backend/local.env
     depends_on:
       - database
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
   database:
     container_name: database
     platform: linux/x86_64

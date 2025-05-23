@@ -1,22 +1,32 @@
 let allStudents = [];  // chứa toàn bộ danh sách từ server
 let allCourses = [];
 
+if (window.jspdf && window.jspdf.jsPDF && window.dejavuFontBase64) {
+    const jsPDF = window.jspdf.jsPDF;
+    jsPDF.API.events.push(['addFonts', function () {
+        this.addFileToVFS("DejaVuSans.ttf", window.dejavuFontBase64);
+        this.addFont("DejaVuSans.ttf", "DejaVuSans", "normal");
+    }]);
+}
+
 function renderStudentRows(students) {
   const tbody = document.querySelector('#view-students tbody');
   tbody.innerHTML = '';
   students.forEach(s => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${s.student_id}</td>
-      <td>${s.student_name}</td>
-      <td class="action-column">
+    <td>${s.student_id}</td>
+    <td>${s.student_name}</td>
+    <td>${s.cohort || ""}</td>  <!-- ✅ THÊM DÒNG NÀY -->
+    <td class="action-column">
         <button class="icon-btn" onclick="editStudent('${s.student_id}')" title="Sửa">
             <i data-feather="edit-2"></i>
         </button>
         <button class="icon-btn icon-btn-danger" onclick="deleteStudent(this,'${s.student_id}')" title="Xóa">
             <i data-feather="trash-2"></i>
         </button>
-      </td>`;
+    </td>
+    `;
     row.addEventListener('click', e => {
       if (!e.target.closest('.action-column')) {
         showStudentDetailModal(s.student_id);
@@ -151,6 +161,7 @@ function closeClassDetail() {
 }
 
 async function showClassDetailModal(courseId) {
+    currentCourseId = courseId;
     try {
         const response = await fetch(`http://localhost:8000/api/courses/${courseId}`);
         const json = await response.json();
@@ -415,7 +426,7 @@ async function showStudentDetailModal(studentId) {
         const res = await fetch(`http://localhost:8000/api/students/${studentId}`);
         const result = await res.json();
 
-        // ✅ Kiểm tra kết quả từ localhost
+        // ✅ Kiểm tra kết quả từ backend
         if (!result.success || !result.data) {
             alert(result.message || "Không tìm thấy sinh viên.");
             return;
@@ -426,6 +437,7 @@ async function showStudentDetailModal(studentId) {
         // ✅ Gán dữ liệu vào modal
         document.getElementById("detail-student-id").innerText = student.student_id;
         document.getElementById("detail-student-name").innerText = student.student_name;
+        document.getElementById("detail-student-cohort").innerText = student.cohort || "";
 
         const imageContainer = document.getElementById("student-images");
         imageContainer.innerHTML = '';
@@ -506,7 +518,7 @@ async function createStudentFromPage() {
     );
 
     const payload = {
-        student_id: studentId,       // ✅ đúng với localhost
+        student_id: studentId,       // ✅ đúng với backend
         student_name: studentName,
         images
     };
@@ -521,7 +533,7 @@ async function createStudentFromPage() {
         });
 
         const text = await res.text(); // nhận toàn bộ phản hồi dưới dạng text
-        console.log("📥 Phản hồi từ localhost (raw):", text);
+        console.log("📥 Phản hồi từ backend (raw):", text);
 
         let result;
         try {
@@ -559,6 +571,8 @@ async function createStudentFromPage() {
         alert("Không thể kết nối tới máy chủ.");
     }
 }
+
+
 
 
 
@@ -690,6 +704,7 @@ async function editStudent(studentId) {
         // Gán dữ liệu vào modal
     document.getElementById("edit-mssv").value = student.student_id;
     document.getElementById("edit-name").value = student.student_name;
+    document.getElementById("edit-cohort").value = student.cohort || "";
 
         const container = document.getElementById("edit-photo-container");
         container.innerHTML = '';
@@ -723,7 +738,7 @@ async function editStudent(studentId) {
         // Thêm lại nút dấu +
         const addCard = document.createElement('div');
         addCard.className = 'student-card add-card';
-        addCard.onclick = triggerImageUpload;
+        addCard.setAttribute("onclick", "openPhotoOptionMenu(event)");  // ✅ sửa đúng hàm mở popup
         addCard.innerHTML = '<span>+</span>';
         container.appendChild(addCard);
 
@@ -761,6 +776,7 @@ function activateMenuItemByPageId(pageId) {
 async function saveStudentFromModal() {
     const studentId = document.getElementById("edit-mssv").value.trim();
     const studentName = document.getElementById("edit-name").value.trim();
+    const studentCohort = document.getElementById("edit-cohort").value.trim();
     const photoCards = document.querySelectorAll('#edit-photo-container .student-card img');
 
     if (!studentId || !studentName) {
@@ -779,10 +795,10 @@ async function saveStudentFromModal() {
 
     const payload = {
         student_name: studentName,
+        cohort: studentCohort, // ✅ THÊM DÒNG NÀY
         images: images
     };
-
-
+    
     try {
         const res = await fetch(`http://localhost:8000/api/students/${studentId}`, {
             method: 'PUT',
@@ -814,7 +830,7 @@ function openAddStudentModal() {
     document.getElementById("add-mssv").value = '';
     document.getElementById("add-name").value = '';
     document.getElementById("add-photo-container").innerHTML = `
-        <div class="student-card add-card" onclick="triggerImageUpload()">
+        <div class="student-card add-card" onclick="openPhotoOptionMenu(event)">
             <span>+</span>
         </div>
     `;
@@ -828,10 +844,11 @@ function closeAddStudentModal() {
 async function saveNewStudent() {
     const studentId = document.getElementById("add-mssv").value.trim(); // 👈 Giữ kiểu string
     const studentName = document.getElementById("add-name").value.trim();
+    const studentCohort = document.getElementById("add-cohort").value.trim();
     const photoCards = document.querySelectorAll('#add-photo-container .student-card img');
 
-    if (!studentId || !studentName) {
-        alert("Vui lòng nhập đầy đủ MSSV và họ tên.");
+    if (!studentId || !studentName || !studentCohort) {
+        alert("Vui lòng nhập đầy đủ MSSV, họ tên và niên khóa.");
         return;
     }
 
@@ -856,6 +873,7 @@ async function saveNewStudent() {
     const payload = {
         student_id: studentId, // 👈 string hợp lệ
         student_name: studentName,
+        cohort: studentCohort,
         images: images
     };
 
@@ -878,7 +896,7 @@ async function saveNewStudent() {
             return;
         }
 
-        console.log("📥 Phản hồi từ localhost:", result);
+        console.log("📥 Phản hồi từ backend:", result);
 
         if (result.success) {
             alert("✅ Sinh viên đã được thêm.");
@@ -987,7 +1005,7 @@ async function updateDashboard() {
         const resStudents = await fetch('http://localhost:8000/api/students');
         const students = await resStudents.json();
         if (students.success) {
-            document.getElementById('total-students').innerText = students.data.length; 
+            document.getElementById('total-students').innerText = students.data.length; // ✅
         }
 
         // Lấy tổng số lớp học
@@ -1006,3 +1024,217 @@ window.addEventListener('DOMContentLoaded', () => {
     feather.replace(); // ✅ để icon hiển thị
     updateDashboard();
 });
+
+let currentCourseId = null;
+
+function openAttendanceHistory() {
+    if (!currentCourseId) {
+        alert("Không xác định được lớp học.");
+        return;
+    }
+
+    fetch(`http://localhost:8000/api/courses/${currentCourseId}/attendances`)
+        .then(res => res.json())
+        .then(json => {
+            if (!json.success || !Array.isArray(json.data)) {
+                alert("Không thể lấy lịch sử điểm danh.");
+                return;
+            }
+
+            const tbody = document.getElementById("attendance-history-body");
+            tbody.innerHTML = "";
+
+            json.data.forEach(att => {
+                const row = document.createElement("tr");
+                const punc = att.punctuality[0] || { early: 0, late: 0, absent: 0 };
+                row.innerHTML = `
+                    <td>${att.attendance_id}</td>
+                    <td>${att.start_time || "-"}</td>
+                    <td>${att.end_time || "-"}</td>
+                    <td>${punc.early || 0}</td>
+                    <td>${punc.late || 0}</td>
+                    <td>${punc.absent || 0}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById("attendance-history-modal").style.display = "flex";
+        })
+        .catch(err => {
+            console.error("Lỗi lấy lịch sử điểm danh:", err);
+            alert("Lỗi kết nối máy chủ.");
+        });
+}
+
+function closeAttendanceHistory() {
+    document.getElementById("attendance-history-modal").style.display = "none";
+}
+
+async function exportClassToPDF() {
+    if (!currentCourseId) {
+        alert("Không xác định được lớp học.");
+        return;
+    }
+
+    try {
+        // 🔹 Lấy thông tin lớp học
+        const courseRes = await fetch(`http://localhost:8000/api/courses/${currentCourseId}`);
+        const courseJson = await courseRes.json();
+        if (!courseJson.success || !courseJson.data) {
+            alert("Không lấy được thông tin lớp học.");
+            return;
+        }
+        const course = courseJson.data;
+
+        // 🔹 Lấy danh sách sinh viên
+        const res = await fetch(`http://localhost:8000/api/courses/${currentCourseId}/students`);
+        const json = await res.json();
+        if (!json.success || !Array.isArray(json.data)) {
+            alert("Không thể lấy danh sách sinh viên.");
+            return;
+        }
+
+        const students = json.data;
+
+        // 🔹 Khởi tạo tài liệu PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFont("DejaVuSans");
+        doc.setFontSize(16);
+
+        // 🔹 Tiêu đề
+        doc.text("DANH SÁCH SINH VIÊN LỚP HỌC", 14, 20);
+
+        // 🔹 Thông tin lớp
+        doc.setFontSize(12);
+        doc.text(`Mã lớp: ${course.course_id}`, 14, 30);
+        doc.text(`Tên môn học: ${course.course_name}`, 14, 38);
+        doc.text(`Giảng viên: ${course.teacher_name}`, 14, 46);
+
+        // 🔹 Dữ liệu bảng
+        const headers = [
+            ["MSSV", "Họ và tên", "Niên khóa", "Đi muộn", "Đến sớm", "Vắng", "Vui", "Buồn", "Bình thản", "Ngạc nhiên", "Tức giận", "Kinh tởm", "Sợ hãi"]
+        ];
+
+        const rows = students.map(s => [
+            s.student_id,
+            s.student_name,
+            s.cohort || "",
+            s.late || 0,
+            s.early || 0,
+            s.absent || 0,
+            s.happy || 0,
+            s.sad || 0,
+            s.neutral || 0,
+            s.suprise || 0,
+            s.angry || 0,
+            s.disgust || 0,
+            s.fear || 0
+        ]);
+
+        doc.autoTable({
+            head: headers,
+            body: rows,
+            startY: 54,
+            styles: {
+                font: "DejaVuSans",
+                fontSize: 10
+            }
+        });
+
+        // 🔹 Xuất file
+        doc.save(`danhsach_${currentCourseId}.pdf`);
+    } catch (err) {
+        console.error("Lỗi khi xuất PDF:", err);
+        alert("Không thể kết nối tới máy chủ.");
+    }
+}
+
+
+function openPhotoOptionMenu(event) {
+
+    const menu = document.getElementById("photo-option-menu");
+    menu.style.display = "block";
+    menu.style.left = `${event.clientX}px`;
+    menu.style.top = `${event.clientY}px`;
+
+    setTimeout(() => {
+        document.addEventListener("click", closePhotoMenuOnce, { once: true });
+    }, 0);
+}
+
+
+function closePhotoMenuOnce(e) {
+    const menu = document.getElementById("photo-option-menu");
+    if (!menu.contains(e.target)) {
+        menu.style.display = "none";
+    }
+}
+
+function triggerWebcamCapture() {
+    const container =
+        document.querySelector('#edit-student-modal[style*="display: flex"] #edit-photo-container') ||
+        document.querySelector('#add-student-modal[style*="display: flex"] #add-photo-container');
+
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        const video = document.createElement("video");
+        video.srcObject = stream;
+        video.play();
+
+        const overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.style.display = "flex";
+
+        const content = document.createElement("div");
+        content.className = "modal-content";
+        content.style.maxWidth = "640px";
+
+        const snapBtn = document.createElement("button");
+        snapBtn.className = "btn btn-success";
+        snapBtn.textContent = "📸 Chụp";
+        snapBtn.onclick = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+
+            stream.getTracks().forEach(t => t.stop());
+            overlay.remove();
+
+            const dataURL = canvas.toDataURL("image/png");
+
+            const newCard = document.createElement("div");
+            newCard.className = "student-card";
+            newCard.style.position = "relative";
+
+            const img = document.createElement("img");
+            img.src = dataURL;
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "8px";
+
+            const removeBtn = document.createElement("button");
+            removeBtn.textContent = "✕";
+            removeBtn.className = "remove-image-btn";
+            removeBtn.onclick = () => container.removeChild(newCard);
+
+            newCard.appendChild(img);
+            newCard.appendChild(removeBtn);
+
+            const addCard = container.querySelector('.add-card');
+            container.insertBefore(newCard, addCard);
+        };
+
+        content.appendChild(video);
+        content.appendChild(snapBtn);
+        overlay.appendChild(content);
+        document.body.appendChild(overlay);
+    }).catch(err => {
+        alert("Không thể truy cập camera.");
+        console.error(err);
+    });
+
+    // Ẩn menu sau khi chọn
+    document.getElementById("photo-option-menu").style.display = "none";
+}
