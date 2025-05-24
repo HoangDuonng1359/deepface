@@ -368,6 +368,34 @@
         <button class="btn btn-sm" onclick="triggerWebcamCapture()">📷 Chụp ảnh</button>
     </div>
 
+    <!-- Modal xác nhận xoá (dùng chung cho sinh viên/lớp học) -->
+    <div id="confirm-delete-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 400px;">
+        <h3 id="confirm-delete-title">Xác nhận xoá</h3>
+        <p id="confirm-delete-message">Bạn có chắc chắn muốn xoá mục này?</p>
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn" onclick="closeConfirmDeleteModal()">Hủy</button>
+        <button class="btn btn-danger" onclick="handleConfirmedDelete()">XÓA</button>
+        </div>
+    </div>
+    </div>
+
+    <!-- Toast thông báo -->
+    <div id="toast" style="
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background-color: #323232;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+        z-index: 99999;
+    "></div>
+
     <script>
         feather.replace();
     </script>
