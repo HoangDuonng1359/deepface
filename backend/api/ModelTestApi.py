@@ -24,3 +24,9 @@ async def find_student(request: FindStudentRequest):
     model = AIDriver([])
     student_id = model.find(request.image)
     return {"student_id": student_id}
+
+@router.post("/delete/{student_id}")
+def delete_student(student_id: str):
+    model = AIDriver([])
+    model.delete_student(student_id)
+    return {"message": "Student deleted successfully."}

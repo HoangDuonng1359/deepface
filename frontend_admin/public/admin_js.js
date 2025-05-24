@@ -1,6 +1,17 @@
 let allStudents = [];  // chứa toàn bộ danh sách từ server
 let allCourses = [];
 
+let studentIdToDelete = null;
+let studentRowToDelete = null;
+
+let deleteContext = {
+    type: null,         // 'student' hoặc 'course'
+    id: null,           // MSSV hoặc mã lớp
+    rowElement: null    // <tr> cần xoá khỏi bảng
+};
+
+
+
 if (window.jspdf && window.jspdf.jsPDF && window.dejavuFontBase64) {
     const jsPDF = window.jspdf.jsPDF;
     jsPDF.API.events.push(['addFonts', function () {
@@ -225,6 +236,14 @@ function addStudentRow() {
     `;
     tbody.appendChild(row);
     feather.replace();
+
+    // ✅ Tự cuộn xuống cuối bảng
+    const container = document.querySelector('#add-class-modal .modal-table-container');
+    if (container) {
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 100);
+    }
 }
 
 function removeRow(button) {
@@ -251,6 +270,14 @@ function addStudentRowToEditClass() {
 
     tbody.appendChild(row);
     feather.replace();
+
+    // ✅ Tự động cuộn xuống cuối bảng
+    const container = document.querySelector('#edit-class-modal .modal-table-container');
+    if (container) {
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 100); // đợi render rồi mới cuộn
+    }
 }
 
 async function confirmRow(button) {
@@ -315,12 +342,18 @@ function editRow(button) {
 
 
 async function createNewClass() {
+    const btn = document.querySelector('#add-class-modal .btn-success');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> ĐANG THÊM...';
+
     const courseId = document.getElementById("course-id").value.trim();
     const courseName = document.getElementById("course-name").value.trim();
     const teacherName = document.getElementById("teacher-name").value.trim();
 
     if (!courseId || !courseName || !teacherName) {
-        alert("Vui lòng nhập đầy đủ thông tin lớp học.");
+        showToast("❌ Vui lòng điền đầy đủ thông tin lớp học.", false);
+        btn.disabled = false;
+        btn.innerHTML = 'Thêm lớp';
         return;
     }
 
@@ -339,6 +372,8 @@ async function createNewClass() {
 
     if (studentIds.length === 0) {
         alert("Vui lòng nhập ít nhất 1 sinh viên.");
+        btn.disabled = false;
+        btn.innerHTML = 'Thêm lớp';
         return;
     }
 
@@ -358,48 +393,45 @@ async function createNewClass() {
             body: JSON.stringify(payload)
         });
 
-        const result = await res.json();
+        const resultText = await res.text();
+        let result;
+
+        try {
+            result = JSON.parse(resultText);
+        } catch (e) {
+            showToast("❌ Phản hồi không hợp lệ từ máy chủ.", false);
+            return;
+        }
 
         if (result.success) {
-            alert("✅ Lớp học đã được thêm.");
+            showToast(`✅ Đã thêm lớp ${courseId} thành công`, true);
             closeAddClassModal();
             loadAllCourses();
         } else {
-            alert("❌ " + (result.message || "Thêm thất bại."));
+            showToast(`❌ Thêm thất bại: ${result.message || "Không rõ lỗi"}`, false);
         }
-
     } catch (err) {
         console.error("Lỗi khi tạo lớp:", err);
-        alert("Không thể kết nối tới máy chủ.");
+        showToast("❌ Không thể kết nối tới máy chủ.", false);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Thêm lớp';
     }
 }
 
 
+function deleteCourse(button, courseId) {
+    deleteContext.type = 'course';
+    deleteContext.id = courseId;
+    deleteContext.rowElement = button.closest('tr');
 
-async function deleteCourse(button, courseId) {
-    const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa lớp ${courseId}?`);
-    if (!confirmDelete) return;
+    document.getElementById('confirm-delete-title').innerText = "Xác nhận xoá lớp học";
+    document.getElementById('confirm-delete-message').innerHTML =
+        `Bạn có chắc chắn muốn xoá lớp học <strong>${courseId}</strong> không?`;
 
-    try {
-        const response = await fetch(`http://localhost:8000/api/courses/${courseId}`, {
-            method: 'DELETE'
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            // Xoá dòng tương ứng khỏi bảng
-            const row = button.closest('tr');
-            if (row) row.remove();
-            alert(result.message);
-        } else {
-            alert(result.message);
-        }
-    } catch (err) {
-        console.error("Lỗi khi xóa lớp:", err);
-        alert("Không thể kết nối tới máy chủ.");
-    }
+    document.getElementById('confirm-delete-modal').style.display = 'flex';
 }
+
 
 async function loadAllStudents() {
     try {
@@ -470,30 +502,6 @@ window.addEventListener("click", function (event) {
         closeStudentDetail();
     }
 });
-
-async function deleteStudent(button, studentId) {
-    const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa sinh viên ${studentId}?`);
-    if (!confirmDelete) return;
-
-    try {
-        const res = await fetch(`http://localhost:8000/api/students/${studentId}`, {
-            method: 'DELETE'
-        });
-
-        const result = await res.json();
-
-        if (result.success) {
-            const row = button.closest('tr');
-            if (row) row.remove();
-            alert(result.message || `✅ Đã xóa sinh viên ${studentId}`);
-        } else {
-            alert(result.message || `❌ Xóa thất bại`);
-        }
-    } catch (err) {
-        console.error("Lỗi khi xóa sinh viên:", err);
-        alert("Không thể kết nối tới máy chủ.");
-    }
-}
 
 async function createStudentFromPage() {
     const mssvInput = document.querySelector('#add-student input[placeholder="Nhập mã số sinh viên"]');
@@ -577,12 +585,18 @@ async function createStudentFromPage() {
 
 
 async function saveEditedClass() {
+    const btn = document.querySelector('#edit-class-modal .btn-success');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> ĐANG LƯU...';
+
     const courseId = document.getElementById("edit-class-id").value.trim();
     const courseName = document.getElementById("edit-class-name").value.trim();
     const teacherName = document.getElementById("edit-teacher-name").value.trim();
 
     if (!courseId || !courseName || !teacherName) {
         alert("Vui lòng nhập đầy đủ thông tin lớp học.");
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu lớp học';
         return;
     }
 
@@ -594,7 +608,7 @@ async function saveEditedClass() {
         const input = firstCell.querySelector('input');
         const mssv = input ? input.value.trim() : firstCell.textContent.trim();
 
-        if (mssv && /^[0-9a-zA-Z]+$/.test(mssv)) {  // Đảm bảo MSSV hợp lệ
+        if (mssv && /^[0-9a-zA-Z]+$/.test(mssv)) {
             studentIds.push(mssv);
         }
     }
@@ -604,8 +618,6 @@ async function saveEditedClass() {
         teacher_name: teacherName,
         students: studentIds
     };
-
-    console.log("📤 Payload sẽ gửi:", JSON.stringify(payload, null, 2));
 
     try {
         const res = await fetch(`http://localhost:8000/api/courses/${courseId}`, {
@@ -617,29 +629,29 @@ async function saveEditedClass() {
         });
 
         const resultText = await res.text();
-        console.log("📥 Phản hồi raw:", resultText);
-
         let result;
         try {
             result = JSON.parse(resultText);
         } catch (e) {
-            alert("❌ Phản hồi không phải JSON.");
+            showToast("❌ Phản hồi không hợp lệ từ máy chủ.", false);
             return;
         }
 
         if (result.success) {
-            alert("✅ Cập nhật lớp học thành công.");
+            showToast(`✅ Đã cập nhật lớp ${courseId}`, true);
             closeEditClassModal();
             loadAllCourses();
         } else {
-            alert("❌ " + (result.message || "Cập nhật thất bại."));
+            showToast(`❌ Cập nhật thất bại: ${result.message || "Không rõ lỗi"}`, false);
         }
     } catch (err) {
         console.error("Lỗi khi cập nhật lớp học:", err);
-        alert("Không thể kết nối tới máy chủ.");
+        showToast("❌ Không thể kết nối tới máy chủ.", false);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu lớp học';
     }
 }
-
 
 function triggerImageUpload() {
     document.getElementById('image-input').click();
@@ -774,18 +786,26 @@ function activateMenuItemByPageId(pageId) {
 }
 
 async function saveStudentFromModal() {
+    const btn = document.querySelector('#edit-student-modal .btn-success');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> ĐANG LƯU...';
+
     const studentId = document.getElementById("edit-mssv").value.trim();
     const studentName = document.getElementById("edit-name").value.trim();
     const studentCohort = document.getElementById("edit-cohort").value.trim();
     const photoCards = document.querySelectorAll('#edit-photo-container .student-card img');
 
     if (!studentId || !studentName) {
-        alert("Vui lòng nhập đầy đủ MSSV và họ tên.");
+        showToast("❌ Vui lòng nhập đầy đủ MSSV và họ tên.", false);
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu';
         return;
     }
 
     if (photoCards.length === 0) {
-        alert("Vui lòng thêm ít nhất một ảnh.");
+        showToast("❌ Vui lòng thêm ít nhất một ảnh.", false);
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu';
         return;
     }
 
@@ -795,7 +815,7 @@ async function saveStudentFromModal() {
 
     const payload = {
         student_name: studentName,
-        cohort: studentCohort, // ✅ THÊM DÒNG NÀY
+        cohort: studentCohort,
         images: images
     };
     
@@ -809,20 +829,28 @@ async function saveStudentFromModal() {
         const result = await res.json();
 
         if (result.success) {
-            alert("✅ Cập nhật sinh viên thành công.");
+            showToast(`✅ Đã cập nhật sinh viên ${studentId}`, true);
             closeEditStudentModal();
             loadAllStudents();
         } else {
-            alert("❌ " + result.message);
+            showToast(`❌ Cập nhật thất bại: ${result.message}`, false);
         }
     } catch (err) {
         console.error("Lỗi khi cập nhật sinh viên:", err);
-        alert("Không thể kết nối tới máy chủ.");
+        showToast("❌ Không thể kết nối tới máy chủ.", false);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu';
     }
 }
 
 function closeEditStudentModal() {
     document.getElementById("edit-student-modal").style.display = "none";
+    const btn = document.querySelector('#edit-student-modal .btn-success');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu';
+    }
 }
 
 function openAddStudentModal() {
@@ -839,21 +867,36 @@ function openAddStudentModal() {
 
 function closeAddStudentModal() {
     document.getElementById("add-student-modal").style.display = "none";
+
+    // ✅ Khôi phục lại nút thêm
+    const btn = document.querySelector('#add-student-modal .btn-success');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'Thêm';
+    }
 }
 
+
 async function saveNewStudent() {
+    const btn = document.querySelector('#add-student-modal .btn-success');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Đang thêm...';
     const studentId = document.getElementById("add-mssv").value.trim(); // 👈 Giữ kiểu string
     const studentName = document.getElementById("add-name").value.trim();
     const studentCohort = document.getElementById("add-cohort").value.trim();
     const photoCards = document.querySelectorAll('#add-photo-container .student-card img');
 
     if (!studentId || !studentName || !studentCohort) {
-        alert("Vui lòng nhập đầy đủ MSSV, họ tên và niên khóa.");
+        showToast("❌ Vui lòng điền đầy đủ thông tin sinh viên.", false);
+        btn.disabled = false;
+        btn.innerHTML = 'Thêm';
         return;
     }
 
     if (photoCards.length === 0) {
         alert("Vui lòng tải lên ít nhất một ảnh nhận dạng.");
+        btn.disabled = false;
+        btn.innerHTML = 'Thêm';
         return;
     }
 
@@ -893,20 +936,21 @@ async function saveNewStudent() {
         } catch (e) {
             console.error("❌ Phản hồi không phải JSON:", resultText);
             alert("❌ Server trả về dữ liệu không hợp lệ.");
+            btn.disabled = false;
+            btn.innerHTML = 'Thêm';
             return;
         }
 
         console.log("📥 Phản hồi từ backend:", result);
 
         if (result.success) {
-            alert("✅ Sinh viên đã được thêm.");
+            showToast(`✅ Thêm sinh viên ${studentId} thành công`, true);
             closeAddStudentModal();
             loadAllStudents();
         } else {
             const detailMsg = result.message || (result.detail ? JSON.stringify(result.detail) : "Thêm thất bại.");
-            alert("❌ " + detailMsg);
+            showToast(`❌ Thêm thất bại: ${detailMsg}`, false);
         }
-
     } catch (err) {
         console.error("❌ Lỗi khi gọi API:", err);
         alert("Không thể kết nối tới máy chủ.");
@@ -916,6 +960,11 @@ async function saveNewStudent() {
 
 function closeEditClassModal() {
   document.getElementById("edit-class-modal").style.display = "none";
+    const btn = document.querySelector('#edit-class-modal .btn-success');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu lớp học';
+    }
 }
 
 function openAddClassModal() {
@@ -928,7 +977,15 @@ function openAddClassModal() {
 
 function closeAddClassModal() {
   document.getElementById("add-class-modal").style.display = "none";
+
+  // ✅ Reset lại nút
+  const btn = document.querySelector('#add-class-modal .btn-success');
+  if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = 'Thêm lớp';
+  }
 }
+
 
 function filterCourses() {
   const idQ = document.getElementById('search-course-id').value.trim().toLowerCase();
@@ -1077,31 +1134,41 @@ async function exportClassToPDF() {
     }
 
     try {
-        const res = await fetch(`http://localhost:8000/api/courses/${currentCourseId}/students`);
-        let json;
-        try {
-            json = await res.json();
-        } catch (e) {
-            console.error("Phản hồi không phải JSON:", e);
-            alert("Phản hồi từ server không hợp lệ.");
+        // 🔹 Lấy thông tin lớp học
+        const courseRes = await fetch(`http://localhost:8000/api/courses/${currentCourseId}`);
+        const courseJson = await courseRes.json();
+        if (!courseJson.success || !courseJson.data) {
+            alert("Không lấy được thông tin lớp học.");
             return;
         }
+        const course = courseJson.data;
 
-        if (!json || !json.success || !Array.isArray(json.data)) {
+        // 🔹 Lấy danh sách sinh viên
+        const res = await fetch(`http://localhost:8000/api/courses/${currentCourseId}/students`);
+        const json = await res.json();
+        if (!json.success || !Array.isArray(json.data)) {
             alert("Không thể lấy danh sách sinh viên.");
             return;
         }
 
         const students = json.data;
 
-        // Khởi tạo tài liệu PDF
+        // 🔹 Khởi tạo tài liệu PDF
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.setFont("DejaVuSans");
         doc.setFontSize(16);
-        doc.text("Danh sách sinh viên lớp " + currentCourseId, 14, 20);
 
-        // Chuẩn bị dữ liệu bảng
+        // 🔹 Tiêu đề
+        doc.text("DANH SÁCH SINH VIÊN LỚP HỌC", 14, 20);
+
+        // 🔹 Thông tin lớp
+        doc.setFontSize(12);
+        doc.text(`Mã lớp: ${course.course_id}`, 14, 30);
+        doc.text(`Tên môn học: ${course.course_name}`, 14, 38);
+        doc.text(`Giảng viên: ${course.teacher_name}`, 14, 46);
+
+        // 🔹 Dữ liệu bảng
         const headers = [
             ["MSSV", "Họ và tên", "Niên khóa", "Đi muộn", "Đến sớm", "Vắng", "Vui", "Buồn", "Bình thản", "Ngạc nhiên", "Tức giận", "Kinh tởm", "Sợ hãi"]
         ];
@@ -1109,36 +1176,37 @@ async function exportClassToPDF() {
         const rows = students.map(s => [
             s.student_id,
             s.student_name,
-            s.cohort,
-            s.late,
-            s.early,
-            s.absent,
-            s.happy,
-            s.sad,
-            s.neutral,
-            s.suprise,
-            s.angry,
-            s.disgust,
-            s.fear
+            s.cohort || "",
+            s.late || 0,
+            s.early || 0,
+            s.absent || 0,
+            s.happy || 0,
+            s.sad || 0,
+            s.neutral || 0,
+            s.suprise || 0,
+            s.angry || 0,
+            s.disgust || 0,
+            s.fear || 0
         ]);
 
         doc.autoTable({
             head: headers,
             body: rows,
-            startY: 30,
+            startY: 54,
             styles: {
-                font: "DejaVuSans",  // ❗ BẮT BUỘC
+                font: "DejaVuSans",
                 fontSize: 10
             }
         });
-        
-        // Lưu file
+
+        // 🔹 Xuất file
         doc.save(`danhsach_${currentCourseId}.pdf`);
     } catch (err) {
         console.error("Lỗi khi xuất PDF:", err);
         alert("Không thể kết nối tới máy chủ.");
     }
 }
+
 
 function openPhotoOptionMenu(event) {
 
@@ -1177,10 +1245,16 @@ function triggerWebcamCapture() {
         const content = document.createElement("div");
         content.className = "modal-content";
         content.style.maxWidth = "640px";
+        content.style.display = "flex";
+        content.style.flexDirection = "column";
+        content.style.alignItems = "center";
 
+        // 📸 Nút chụp
         const snapBtn = document.createElement("button");
         snapBtn.className = "btn btn-success";
         snapBtn.textContent = "📸 Chụp";
+        snapBtn.style.width = "100%";
+
         snapBtn.onclick = () => {
             const canvas = document.createElement("canvas");
             canvas.width = video.videoWidth;
@@ -1198,10 +1272,10 @@ function triggerWebcamCapture() {
 
             const img = document.createElement("img");
             img.src = dataURL;
-            img.style.width = "100%";
-            img.style.height = "100%";
-            img.style.objectFit = "cover";
-            img.style.borderRadius = "8px";
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '8px';
 
             const removeBtn = document.createElement("button");
             removeBtn.textContent = "✕";
@@ -1215,8 +1289,29 @@ function triggerWebcamCapture() {
             container.insertBefore(newCard, addCard);
         };
 
+        // ❌ Nút hủy
+        const cancelBtn = document.createElement("button");
+        cancelBtn.className = "btn btn-danger";
+        cancelBtn.textContent = "❌ Hủy";
+        cancelBtn.style.width = "100%";
+
+        cancelBtn.onclick = () => {
+            stream.getTracks().forEach(t => t.stop());
+            overlay.remove();
+        };
+
+        const buttonWrapper = document.createElement("div");
+        buttonWrapper.style.display = "flex";
+        buttonWrapper.style.flexDirection = "column";
+        buttonWrapper.style.width = "100%";
+        buttonWrapper.style.marginTop = "12px";
+        buttonWrapper.style.gap = "10px";
+
+        buttonWrapper.appendChild(snapBtn);
+        buttonWrapper.appendChild(cancelBtn);
+
         content.appendChild(video);
-        content.appendChild(snapBtn);
+        content.appendChild(buttonWrapper);
         overlay.appendChild(content);
         document.body.appendChild(overlay);
     }).catch(err => {
@@ -1224,6 +1319,88 @@ function triggerWebcamCapture() {
         console.error(err);
     });
 
-    // Ẩn menu sau khi chọn
+    // Ẩn menu chọn ảnh
     document.getElementById("photo-option-menu").style.display = "none";
+}
+
+function deleteStudent(button, studentId) {
+    deleteContext.type = 'student';
+    deleteContext.id = studentId;
+    deleteContext.rowElement = button.closest('tr');
+
+    document.getElementById('confirm-delete-title').innerText = "Xác nhận xoá sinh viên";
+    document.getElementById('confirm-delete-message').innerHTML =
+        `Bạn có chắc chắn muốn xoá sinh viên <strong>${studentId}</strong> không?`;
+
+    document.getElementById('confirm-delete-modal').style.display = 'flex';
+}
+
+
+async function confirmDeleteStudent() {
+    if (!studentIdToDelete) return;
+
+    try {
+        const res = await fetch(`http://localhost:8000/api/students/${studentIdToDelete}`, {
+            method: 'DELETE'
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+            if (studentRowToDelete) studentRowToDelete.remove();
+            alert(`✅ Đã xoá sinh viên ${studentIdToDelete}`);
+        } else {
+            alert(`❌ Xoá thất bại: ${result.message}`);
+        }
+    } catch (err) {
+        console.error("Lỗi khi xoá sinh viên:", err);
+        alert("Không thể kết nối tới máy chủ.");
+    } finally {
+        closeConfirmDeleteModal();
+    }
+}
+
+async function handleConfirmedDelete() {
+    const { type, id, rowElement } = deleteContext;
+
+    if (!id || !type) return;
+
+    try {
+        const url = type === 'student'
+            ? `http://localhost:8000/api/students/${id}`
+            : `http://localhost:8000/api/courses/${id}`;
+
+        const res = await fetch(url, { method: 'DELETE' });
+        const result = await res.json();
+
+        if (result.success) {
+            if (rowElement) rowElement.remove();
+            showToast(`✅ Đã xoá ${type === 'student' ? 'sinh viên' : 'lớp học'} ${id}`, true);
+        } else {
+            showToast(`❌ Xoá thất bại: ${result.message}`, false);
+        }
+    } catch (err) {
+        console.error("Lỗi khi xoá:", err);
+        alert("Không thể kết nối tới máy chủ.");
+    } finally {
+        closeConfirmDeleteModal();
+    }
+}
+
+function closeConfirmDeleteModal() {
+    document.getElementById('confirm-delete-modal').style.display = 'none';
+    deleteContext = { type: null, id: null, rowElement: null };
+}
+
+function showToast(message, isSuccess = true) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.style.backgroundColor = isSuccess ? "#4CAF50" : "#F44336"; // Xanh hoặc Đỏ
+    toast.style.opacity = "1";
+    toast.style.pointerEvents = "auto";
+
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.pointerEvents = "none";
+    }, 3000); // tự ẩn sau 3 giây
 }

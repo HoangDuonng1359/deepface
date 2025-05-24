@@ -33,6 +33,11 @@ services:
       - ./backend/local.env
     depends_on:
       - database
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
   database:
     container_name: database
     platform: linux/x86_64
