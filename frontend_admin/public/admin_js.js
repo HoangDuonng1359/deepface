@@ -236,6 +236,14 @@ function addStudentRow() {
     `;
     tbody.appendChild(row);
     feather.replace();
+
+    // ✅ Tự cuộn xuống cuối bảng
+    const container = document.querySelector('#add-class-modal .modal-table-container');
+    if (container) {
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 100);
+    }
 }
 
 function removeRow(button) {
@@ -262,6 +270,14 @@ function addStudentRowToEditClass() {
 
     tbody.appendChild(row);
     feather.replace();
+
+    // ✅ Tự động cuộn xuống cuối bảng
+    const container = document.querySelector('#edit-class-modal .modal-table-container');
+    if (container) {
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 100); // đợi render rồi mới cuộn
+    }
 }
 
 async function confirmRow(button) {
