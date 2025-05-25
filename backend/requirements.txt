@@ -9,4 +9,3 @@ pybase64
 tensorflow
 tf-keras
 Pillow
-numpy
