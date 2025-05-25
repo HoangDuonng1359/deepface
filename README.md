@@ -51,21 +51,21 @@ Bước 5: Khi khởi động hoàn tất, bạn đã có thể sử dụng ứn
 ## Chức năng cho người dùng
 
 <center>
-<img src="image/dashboardview.png" width="500">
+<img src="image/dashboardview.png">
 
 Khi mở ứng dụng, giảng viên sẽ tìm và lựa chọn lớp học của mình để tạo ca điểm danh
 
 </center>
 
 <center>
-<img src="image/attendanceview.png" width="500">
+<img src="image/attendanceview.png">
 
 Mỗi sinh viên lần lượt đưa khuôn mặt vào trong camera, hệ thống sẽ tự nhận diện sinh viên theo thời gian thực và thực hiện tự động điểm danh cho sinh viên đó.
 
 </center>
 
 <center>
-<img src="image/statisticview.png" width="500">
+<img src="image/statisticview.png">
 
 Kết thúc mỗi ca điểm danh sẽ là bảng thông kê, hiển thị các chi tiết những sinh viên nào đi học đúng giờ, đi học muộn, vắng kèm theo tâm trạng.
 
@@ -75,19 +75,19 @@ Kết thúc mỗi ca điểm danh sẽ là bảng thông kê, hiển thị các 
 ## Chức năng cho admin
 
 <center>
-<img src="image/admindashboard.png" width="500">
+<img src="image/admindashboard.png">
 
 Giao diện quản trị viên sử dụng để quản lý cơ sở dữ liệu phục vụ cho điểm danh, bao gồm thêm xóa sửa sinh viên và lớp học.
 </center>
 
 <center>
-<img src="image/adminstudent.png" width="500">
+<img src="image/adminstudent.png">
 
 Quản trị viên có thể thêm, xóa, hoặc sửa sinh viên trong cơ sở dữ liệu. Ở phần này, các bức ảnh do sinh viên cung cấp hoặc chụp sẽ được lấy làm dữ liệu đối chiếu điểm danh.
 </center>
 
 <center>
-<img src="image/admincourse.png" width="500">
+<img src="image/admincourse.png">
 
 Quản trị viên có thể thêm, sửa, xóa các lớp học, thêm hoặc xóa sinh viên ra khỏi một lớp học nào đó.
 </center>
@@ -101,8 +101,8 @@ Quản trị viên có thể thêm, sửa, xóa các lớp học, thêm hoặc x
 | Backend                       | Python, FastAPI           |
 | AI Backend                    | DeepFace                  |
 | Cơ sở dữ liệu                 | MySQL                     |
-| Giao diện người dùng (User)   | ReactJS                   |
-| Giao diện quản trị (Admin)    | HTML-CSS-JS               |
+| Giao diện điểm danh           | ReactJS                   |
+| Giao diện quản trị            | HTML-CSS-JS               |
 
 
 
