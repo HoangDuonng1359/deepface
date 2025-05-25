@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Button, Tag, Divider, Row, Col, Statistic, Modal, Result, Segmented, Avatar, Form, Input, DatePicker, TimePicker, message } from 'antd';
+import { Card, Typography, Button, Divider, Row, Col, Statistic, Modal, Segmented, Avatar, Form, Input, DatePicker} from 'antd';
 import { UserOutlined, ClockCircleOutlined, CalendarOutlined, TeamOutlined, BarcodeOutlined } from '@ant-design/icons';
-import { Course, Student } from '../interface/Course';
+import { Course } from '../interface/Course';
 import { useNavigate } from 'react-router-dom';
 import { Attendance } from '../interface/Attendance';
 import { API_ENDPOINTS } from '../constants/api';
@@ -31,7 +31,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
 
   useEffect(() => {
     console.log(course);
-  },[])
+  },[course])
 
   const handleModalOk = () => {
     form

@@ -1,4 +1,5 @@
 import Header from '../components/Header';
+import Notification from '../components/Notification';
 import { API_ENDPOINTS } from "../constants/api";
 import { useParams } from 'react-router-dom';
 
@@ -10,15 +11,16 @@ import * as faceapi from 'face-api.js';
 import { Attendance, StudentsAttendance } from '../interface/Attendance';
 import { useNavigate } from 'react-router-dom';
 import AttendanceInfo from '../components/AttendanceInfo';
+import { AttendanceResult } from '../components/AttendanceResult';
+import { ThreeDot } from 'react-loading-indicators';
 
-// Extend the Window interface to include latestResizedDetections
 declare global {
   interface Window {
     latestResizedDetections?: any;
   }
 }
 
-interface PredictionResult {
+export interface PredictionResult {
   success: boolean;
   message: string;
   data: StudentsAttendance;
@@ -36,11 +38,13 @@ const AttendancePage: React.FC = () => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const navigate = useNavigate();
   const [confirmVisible, setConfirmVisible] = useState(false);
-
+  const [notify, setNotify] = useState<{ type: "success" | "error"; message: string; description?: string } | null>(null);
+  const [videoReady, setVideoReady] = useState(false);
   const { attendance_id } = useParams();
   const [course, setCourse] = useState<Course>();
   const [attendance, setAttendance] = useState<Attendance>();
   const [imageBase64, setImageBase64] = useState<string>();
+  const [isDetecting, setIsDetecting] = useState(true);
 
   // Fetch attendance and course info
   useEffect(() => {
@@ -96,10 +100,7 @@ const AttendancePage: React.FC = () => {
         setIsCapturing(true);
       }
     } catch (error) {
-      notification.error({
-        message: 'Lỗi Camera',
-        description: 'Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập.',
-      });
+      setNotify({ type: "error", message: "Lỗi không thể truy cập camera", description: String(error) });
       setIsCapturing(false);
       setStream(null);
     }
@@ -118,9 +119,12 @@ const AttendancePage: React.FC = () => {
     sendIntervalRef.current = null;
     // Clear canvas
     if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext("2d");
-      if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    const ctx = canvasRef.current.getContext("2d");
+    if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      canvasRef.current.width = 0;
+      canvasRef.current.height = 0;
     }
+    setVideoReady(false);
   };
 
   // Load models on mount
@@ -139,133 +143,133 @@ useEffect(() => {
 
   // Start/stop camera and detection based on isCapturing and modelsLoaded
   useEffect(() => {
-    if (modelsLoaded && isCapturing && stream) {
-      // Start detection intervals
-      let lastSentBoxes: faceapi.Box[] = [];
-      detectIntervalRef.current && clearInterval(detectIntervalRef.current);
-      sendIntervalRef.current && clearInterval(sendIntervalRef.current);
+  if (modelsLoaded && isCapturing && stream && videoReady) {
+    let lastSentBoxes: faceapi.Box[] = [];
 
-      detectIntervalRef.current = setInterval(async () => {
-        if (!videoRef.current || !canvasRef.current) return;
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+    // Xóa các interval cũ nếu có
+    detectIntervalRef.current && clearInterval(detectIntervalRef.current);
+    sendIntervalRef.current && clearInterval(sendIntervalRef.current);
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+    detectIntervalRef.current = setInterval(async () => {
+      if (!videoRef.current || !canvasRef.current) return;
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-        const displaySize = canvas.getBoundingClientRect();
-        faceapi.matchDimensions(canvas, {
-          width: displaySize.width,
-          height: displaySize.height,
-        });
+      // Đảm bảo video đã sẵn sàng và có kích thước hợp lệ
+      if (video.videoWidth === 0 || video.videoHeight === 0) return;
 
-        const detections = await faceapi
-          .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks()
-          .withFaceExpressions();
+      const width = video.videoWidth;
+      const height = video.videoHeight;
 
-        // Resize kết quả nhận diện cho đúng kích thước canvas
-        const resizedDetections = faceapi.resizeResults(detections, {
-          width: canvas.width,
-          height: canvas.height,
-        });
+      canvas.width = width;
+      canvas.height = height;
 
-        // Xóa canvas trước khi vẽ mới
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const size = { width, height };
 
-        // Vẽ bounding box và landmarks
-        faceapi.draw.drawDetections(canvas, resizedDetections);
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+      faceapi.matchDimensions(canvas, size);
 
-        // Vẽ cảm xúc lên canvas
-        resizedDetections.forEach((detection: any) => {
-          const { x, y, height } = detection.detection.box;
-          const expressions = detection.expressions;
-          if (expressions) {
-            // Tìm cảm xúc lớn nhất
-            const maxEmotion = Object.keys(expressions).reduce((a, b) =>
-              expressions[a] > expressions[b] ? a : b
-            );
-            const maxValue = expressions[maxEmotion];
-            ctx.font = "20px Arial";
-            ctx.fillStyle = "#1890ff";
-            ctx.fillText(
-              `${maxEmotion} (${(maxValue * 100).toFixed(0)}%)`,
-              x,
-              y + height + 24 
-            );
-          }
-        });
+      const detections = await faceapi
+        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceExpressions();
 
-        window.latestResizedDetections = resizedDetections;
-      }, 100);
+      const resizedDetections = faceapi.resizeResults(detections, size);
 
-      sendIntervalRef.current = setInterval(() => {
-        const resizedDetections = window.latestResizedDetections || [];
-        const currentBoxes: faceapi.Box[] = (resizedDetections as any[]).map(det => det.detection.box);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      faceapi.draw.drawDetections(canvas, resizedDetections);
+      faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+      
+      resizedDetections.forEach((detection: any) => {
+        const { x, y, height } = detection.detection.box;
+        const expressions = detection.expressions;
+        if (expressions) {
+          const maxEmotion = Object.keys(expressions).reduce((a, b) =>
+            expressions[a] > expressions[b] ? a : b
+          );
+          const maxValue = expressions[maxEmotion];
+          ctx.font = "20px Arial";
+          ctx.fillStyle = "#1890ff";
+          ctx.fillText(
+            `${maxEmotion} (${(maxValue * 100).toFixed(0)}%)`,
+            x,
+            y + height + 24
+          );
+        }
+      });
 
-        const isNewFaceDetected = () => {
-          if (lastSentBoxes.length !== currentBoxes.length) return true;
-          for (let i = 0; i < currentBoxes.length; i++) {
-            const prev = lastSentBoxes[i];
-            const curr = currentBoxes[i];
-            const dx = Math.abs(prev.x - curr.x);
-            const dy = Math.abs(prev.y - curr.y);
-            const dw = Math.abs(prev.width - curr.width);
-            const dh = Math.abs(prev.height - curr.height);
-            if (dx > 20 || dy > 20 || dw > 20 || dh > 20) {
-              return true;
-            }
-          }
-          return false;
-        };
+      if (isDetecting) setIsDetecting(false); 
 
-        if (isNewFaceDetected()) {
-          lastSentBoxes = currentBoxes;
-          // Lấy emotion mạnh nhất tại thời điểm này
-          let detectedEmotion = '';
-          if (resizedDetections.length > 0 && resizedDetections[0].expressions) {
-            const expressions = resizedDetections[0].expressions;
-            detectedEmotion = Object.keys(expressions).reduce((a, b) =>
-              expressions[a] > expressions[b] ? a : b
-            );
-          }
-          // Gửi toàn bộ frame video cùng emotion
-          if (videoRef.current) {
-            const video = videoRef.current;
-            const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = video.videoWidth;
-            tempCanvas.height = video.videoHeight;
-            const tempCtx = tempCanvas.getContext("2d");
-            if (tempCtx) {
-              tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-              const base64Frame = tempCanvas.toDataURL("image/jpeg");
-              setImageBase64(base64Frame);
-              sendImageToServer(detectedEmotion, base64Frame); 
-            }
+      window.latestResizedDetections = resizedDetections;
+    }, 100);
+
+    sendIntervalRef.current = setInterval(() => {
+      const resizedDetections = window.latestResizedDetections || [];
+      const currentBoxes: faceapi.Box[] = (resizedDetections as any[]).map(
+        (det) => det.detection.box
+      );
+
+      const isNewFaceDetected = () => {
+        if (lastSentBoxes.length !== currentBoxes.length) return true;
+        for (let i = 0; i < currentBoxes.length; i++) {
+          const prev = lastSentBoxes[i];
+          const curr = currentBoxes[i];
+          const dx = Math.abs(prev.x - curr.x);
+          const dy = Math.abs(prev.y - curr.y);
+          const dw = Math.abs(prev.width - curr.width);
+          const dh = Math.abs(prev.height - curr.height);
+          if (dx > 20 || dy > 20 || dw > 20 || dh > 20) {
+            return true;
           }
         }
-      }, 2000);
-
-      // Cleanup intervals on unmount or when stopCamera is called
-      return () => {
-        if (detectIntervalRef.current) clearInterval(detectIntervalRef.current);
-        if (sendIntervalRef.current) clearInterval(sendIntervalRef.current);
-        detectIntervalRef.current = null;
-        sendIntervalRef.current = null;
+        return false;
       };
-    }
-    // Cleanup if camera is stopped
+
+      if (isNewFaceDetected()) {
+        lastSentBoxes = currentBoxes;
+        let detectedEmotion = '';
+        if (resizedDetections.length > 0 && resizedDetections[0].expressions) {
+          const expressions = resizedDetections[0].expressions;
+          detectedEmotion = Object.keys(expressions).reduce((a, b) =>
+            expressions[a] > expressions[b] ? a : b
+          );
+        }
+
+        if (videoRef.current) {
+          const video = videoRef.current;
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = video.videoWidth;
+          tempCanvas.height = video.videoHeight;
+          const tempCtx = tempCanvas.getContext("2d");
+          if (tempCtx) {
+            tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+            const base64Frame = tempCanvas.toDataURL("image/jpeg");
+            setImageBase64(base64Frame);
+            sendImageToServer(detectedEmotion, base64Frame);
+          }
+        }
+      }
+    }, 2000);
+
     return () => {
       if (detectIntervalRef.current) clearInterval(detectIntervalRef.current);
       if (sendIntervalRef.current) clearInterval(sendIntervalRef.current);
       detectIntervalRef.current = null;
       sendIntervalRef.current = null;
     };
-    // eslint-disable-next-line
-  }, [modelsLoaded, isCapturing, stream]);
+  }
+
+  // Cleanup khi camera tắt
+  return () => {
+    if (detectIntervalRef.current) clearInterval(detectIntervalRef.current);
+    if (sendIntervalRef.current) clearInterval(sendIntervalRef.current);
+    detectIntervalRef.current = null;
+    sendIntervalRef.current = null;
+  };
+  // eslint-disable-next-line
+}, [modelsLoaded, isCapturing, stream, videoReady]);
+
 
   const endAttendance = async () => {
     if (attendance?.attendance_id) {
@@ -278,13 +282,16 @@ useEffect(() => {
         });
         const result = await res.json();
         if (result.success) {
-          alert("Kết thúc thành công");
-          navigate('/statistics/' + attendance.attendance_id);
+          setNotify({ type: "success", message: "Kết thúc thành công" });
+          setTimeout(() => {
+            setNotify(null);
+            navigate('/statistics/' + attendance.attendance_id);
+          }, 1500);
         } else {
-          alert("Lỗi kết thúc ca điểm danh: " + result.message)
+          setNotify({ type: "error", message: "Lỗi kết thúc ca điểm danh", description: result.message });
         }
       } catch (e) {
-        alert("lỗi" + e);
+        setNotify({ type: "error", message: "Lỗi", description: String(e) });
       }
     }
   }
@@ -303,7 +310,7 @@ useEffect(() => {
     // Cắt bỏ tiền tố 'data:image/jpeg;base64,...'
     const pureBase64 = base64Image.split(',')[1];
     try {
-      console.log('Gửi lên:', { emotion, image: pureBase64 });
+      //console.log('Gửi lên:', { emotion, image: pureBase64 });
       const response = await fetch(API_ENDPOINTS.ATTENDANCE.SEND_ATTENDANCE(attendance.attendance_id), {
         method: 'PUT',
         headers: {
@@ -321,14 +328,17 @@ useEffect(() => {
         throw new Error(errorData.message || 'Failed to get prediction');
       }
     } catch (error) {
-      notification.error({
-        message: 'Lỗi Dự Đoán',
-        description: String(error),
+      setNotify({
+      type: "error",
+      message: "Lỗi Dự Đoán",
+      description: String(error),
       });
     } finally {
       setLoading(false);
     }
   };
+
+  
 
   if (!modelsLoaded) {
     return (
@@ -357,21 +367,63 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      <Header />
+      <Header/>
+      {notify && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50">
+          <Notification
+            type={notify.type}
+            message={notify.message}
+            description={notify.description}
+            onClose={() => setNotify(null)}
+          />
+        </div>
+      )}
       <div className="flex flex-1 p-4">
         <div className="flex flex-col w-1/2 bg-white rounded-lg shadow mr-4 p-4">
           <div className="text-center text-blue-700 text-xl font-bold mb-4">
             Hãy đưa khuôn mặt vào
           </div>
-          <div className="relative flex-1 flex items-center justify-center bg-gray-200 rounded-lg overflow-hidden ">
+          <div className="w-full h-full relative flex-1 flex items-center justify-center bg-gray-200 rounded-lg overflow-hidden ">
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className="w-full h-full"
+              onLoadedData={() => setVideoReady(true)}
             />
             <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full pointer-events-none" />
+            {isCapturing ? (
+              isDetecting && (
+                <div className="absolute inset-0 flex flex-col items-center w-full h-full justify-center bg-white z-10">
+                  <img
+                    src="/load-loading.gif"
+                    alt="Loading"
+                    className="mb-4 w-24 h-24 object-contain"
+                    style={{ animation: "bounce 1.5s infinite" }}
+                  />
+                  {/* <Spin
+        indicator={<LoadingOutlined style={{ fontSize: 64, color: "#32cd32" }} spin />} 
+        size="default"
+      /> */}
+                  <div className="mb-2 text-2xl font-bold text-blue-600 animate-pulse">
+                    Chờ một xíu nhé!!!
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center w-full h-full justify-center bg-white z-10">
+                <img
+                  src="/load-loading.gif"
+                  alt="Camera Off"
+                  className="mb-4 w-24 h-24 object-contain grayscale"
+                  style={{ animation: "bounce 1.5s infinite" }}
+                />
+                <div className="mb-2 text-2xl font-bold text-red-500 animate-pulse">
+                  Camera đang tắt kìa!
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-center items-center gap-4 mt-6">
@@ -398,84 +450,12 @@ useEffect(() => {
           </div>
         </div>
 
-        <div className="flex flex-col w-1/2 h-full mx-auto gap-6 px-4">
+        <div className="flex flex-col w-1/2 h-full gap-6 px-4">
           {/* Thông tin khoá học */}
           <AttendanceInfo course={course} attendance={attendance}></AttendanceInfo>
 
           {/* Kết quả điểm danh */}
-          <div className="flex flex-col bg-white rounded-lg shadow p-6 w-full h-full">
-            <div className="text-center text-blue-700 text-2xl font-bold mb-6">
-              Kết quả điểm danh
-            </div>
-            <div className="flex items-center justify-center h-full min-h-[120px]">
-              {loading ? (
-                <Spin
-                  indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />}
-                  tip="Đang xử lý..."
-                />
-              ) : predictionResult && predictionResult.data ? (
-                <div className="text-center space-y-3 p-4 rounded-lg border border-blue-200 bg-blue-50 shadow-sm">
-                  <div className="flex items-center justify-center gap-6">
-                    {/* Ảnh khuôn mặt bên trái */}
-                    <div className="flex-shrink-0 flex justify-center items-center">
-                      <img
-                        src={imageBase64}
-                        alt="Khuôn mặt nhận diện"
-                        className="rounded-lg border border-gray-300 shadow w-24 h-24 object-cover"
-                        style={{ maxWidth: 96, maxHeight: 96 }}
-                      />
-                    </div>
-                    {/* Thông tin kết quả bên phải */}
-                    <div className="flex flex-col items-start space-y-2 text-left">
-                      <div className="text-lg font-semibold text-green-700">{predictionResult.message}</div>
-                      <div className="text-base font-bold text-blue-800">{predictionResult.data.student_name}</div>
-                      <div className="text-sm font-medium text-blue-700">
-                        Mã sinh viên: <span className="font-semibold">{predictionResult.data.student_id}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="font-semibold text-indigo-600">Tâm trạng:</span>
-                        <span className="ml-2 text-indigo-800">{predictionResult.data.emotion}</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="font-semibold text-gray-600">Vào lúc:</span>
-                        <span className="ml-2 text-gray-800">
-                          {predictionResult.data.time_in
-                            ? new Date(predictionResult.data.time_in).toLocaleString('vi-VN', {
-                                hour12: false,
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit'
-                              })
-                            : ''}
-                        </span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="font-semibold text-gray-600">Trạng thái:</span>
-                        <span className="ml-2 text-gray-800">{predictionResult.data.status}</span>
-                      </div>
-                      <div className="text-gray-500 text-xs mt-1">
-                        Cập nhật: {new Date().toLocaleTimeString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-gray-500 text-center">
-                  <div>Chưa có dữ liệu. Đang chờ kết quả từ camera...</div>
-                  <div>{predictionResult?.message}</div>
-                  <img
-                        src={imageBase64}
-                        alt="Khuôn mặt nhận diện"
-                        className="rounded-lg border border-gray-300 shadow w-24 h-24 object-cover"
-                        style={{ maxWidth: 96, maxHeight: 96 }}
-                      />
-                </div>
-              )}
-            </div>
-          </div>
+            <AttendanceResult predictionResult={predictionResult} loading={loading} imageBase64={imageBase64 || ""}></AttendanceResult>
         </div>
         {/* Modal xác nhận */}
         <Modal
