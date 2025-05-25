@@ -1,5 +1,8 @@
 # Hệ thống điểm danh và nhận diện cảm xúc sinh viên
-![Demo](./image/deepface-icon-labeled.png)
+
+<p align="center">
+  <img src="image/deepface-icon-labeled.png" alt="" width="300">
+</p>
 
 Hệ thống điểm danh và nhận diện cảm xúc sinh viên được xây dựng dựa trên deepface với nhiều tính năng tiên tiến như nhận dạng và phân tích cảm xúc từ hình ảnh. Với hệ thống tiên tiến này giảng viên có thể dễ dàng quản lý lớp học, tình trạng tham gia môn học của sinh viên từ đó đưa ra những điều chỉnh hợp lý.
 
