@@ -12,22 +12,9 @@ Nếu đã cài sẵn Docker trên máy tính của mình, bạn có thể thự
 
 Bước 1: Khởi động Docker Desktop
 
-Bước 2: Mở terminal và chạy lần lượt các câu lệnh sau
+Bước 2: Tải xuống file `docker-compose.yml` tại repo này vào sao chép vào một thư mục bất kì. Tuy nhiên, mọi thứ sẽ hoạt động tốt nếu thư mục đó không chứa bất kì file hay thư mục nào khác.
 
-```shell 
-   docker pull lamducanh/uetas-database
-   
-   docker pull lamducanh/uetas-backend
-   
-   docker pull lamducanh/uetas-frontend
-   
-   docker pull lamducanh/uetas-frontend-admin
-```
-Các câu lệnh trên sẽ tải xuống các docker images tạo nên hệ thống UET Attendance System. 
-
-Bước 3: Tải xuống file `docker-compose.yml` tại repo này vào sao chép vào một thư mục bất kì. Mọi thứ sẽ hoạt động trơn tru nếu thư mục đó không chứa bất kì file hay thư mục nào khác.
-
-Bước 4: Mở thư mục của bạn trong terminal và chạy câu lệnh sau:
+Bước 3: Mở thư mục của bạn trong terminal và chạy câu lệnh sau:
 
 ```bash
    docker-compose up
@@ -35,7 +22,7 @@ Bước 4: Mở thư mục của bạn trong terminal và chạy câu lệnh sau
 
 Bạn sẽ cần chờ một lúc để hệ thống khởi chạy.
 
-Bước 5: Khi khởi động hoàn tất, bạn đã có thể sử dụng ứng dụng.
+Bước 4: Khi khởi động hoàn tất, bạn đã có thể sử dụng ứng dụng.
 
 1. Mở http://localhost:3000/ để vào giao diện điểm danh
 2. Mở http://localhost:8081/ để vào giao diện admin
