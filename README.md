@@ -1,33 +1,41 @@
 # UET Attendance System: Hệ thống điểm danh và nhận diện cảm xúc sinh viên
 <p align="center">
-  <img src="image/deepface-icon-labeled1.png" alt="" width="500">
+  <img src="image/recognize-image.png" alt="" width="500">
 </p>
 
-Hệ thống điểm danh và nhận diện cảm xúc sinh viên được xây dựng dựa trên deepface với nhiều tính năng như nhận dạng và phân tích cảm xúc từ hình ảnh. Với hệ thống này giảng viên có thể dễ dàng theo dõi lớp học, tình trạng tham gia môn học của sinh viên từ đó đưa ra những điều chỉnh hợp lý.
+UET Attendance System - Hệ thống điểm danh và nhận diện cảm xúc sinh viên, được thiết kế để hỗ trợ việc quản lý điểm danh cho Trường Đại học Công Nghệ. Hệ thống tích công nghệ nhận diện khuôn mặt giúp tự động hóa quá trình điểm danh của sinh viên, đồng thời phân tích cảm xúc sinh viên trong lúc điểm danh để giảng viên có thể nắm bắt và điều chỉnh bài học của mình ngày hôm đó.
 
 
 # Chạy dự án bằng Docker
 
-Bước 1: khởi động Docker Desktop 
+Nếu đã cài sẵn Docker trên máy tính của mình, bạn có thể thực hiện theo các bước dưới đây để cài dặt và chạy hệ thống:
+
+Bước 1: Khởi động Docker Desktop
 
 Bước 2: Mở terminal và chạy lần lượt các câu lệnh sau
 
 ```shell 
-   $ docker pull lamducanh/uetas2-database
-   $ docker pull lamducanh/uetas2-backend
-   $ docker pull lamducanh/uetas2-frontend
-   $ docker pull lamducanh/uetas2-frontend-admin
+   docker pull lamducanh/uetas-database
+   
+   docker pull lamducanh/uetas-backend
+   
+   docker pull lamducanh/uetas-frontend
+   
+   docker pull lamducanh/uetas-frontend-admin
 ```
+Các câu lệnh trên sẽ tải xuống các docker images tạo nên hệ thống UET Attendance System. 
 
-Bước 3: Copy file `docker-compose.yml` tại repo này vào một thư mục bất kì. Hãy đảm bảo rằng thư mục của bạn không có bất kì file nào khác.
+Bước 3: Tải xuống file `docker-compose.yml` tại repo này vào sao chép vào một thư mục bất kì. Mọi thứ sẽ hoạt động trơn tru nếu thư mục đó không chứa bất kì file hay thư mục nào khác.
 
-Bước 4: Khởi động hệ thống bằng lệnh
+Bước 4: Mở thư mục của bạn trong terminal và chạy câu lệnh sau:
 
 ```bash
-   $ docker-compose up
+   docker-compose up
 ```
 
-Bước 5: Sử dụng hệ thống 
+Bạn sẽ cần chờ một lúc để hệ thống khởi chạy.
+
+Bước 5: Khi khởi động hoàn tất, bạn đã có thể sử dụng ứng dụng.
 
 1. Mở http://localhost:3000/ để vào giao diện điểm danh
 2. Mở http://localhost:8081/ để vào giao diện admin
@@ -40,38 +48,61 @@ Bước 5: Sử dụng hệ thống
 - Tạo ca điểm danh, setup thời gian linh hoạt.
 
 
-## Minh họa ứng dụng
+## Chức năng cho người dùng
 
-1. Giao diện gần gũi, thao tác đơn giản dễ sử dụng.
+<center>
+<img src="image/dashboardview.png" width="500">
 
-<p align="center">
-  <img src="image/giaodien1.png" width="300">
-  <img src="image/giaodien2.png" width="300">
-</p>
+Khi mở ứng dụng, giảng viên sẽ tìm và lựa chọn lớp học của mình để tạo ca điểm danh
 
-2. Phát hiện và nhận dạng khuôn mặt trong thời gian thực
+</center>
 
-<p align="center">
-  <img src="image/phathien.png" alt="" width="300">
-</p>
+<center>
+<img src="image/attendanceview.png" width="500">
 
-2. Điểm danh và nhận diện cảm xúc chính xác
+Mỗi sinh viên lần lượt đưa khuôn mặt vào trong camera, hệ thống sẽ tự nhận diện sinh viên theo thời gian thực và thực hiện tự động điểm danh cho sinh viên đó.
 
-<p align="center">
-  <img src="image/thongtindiemdanh1.png" width="200">
-  <img src="image/thongtindiemdanh2.png" width=340">
-</p>
+</center>
+
+<center>
+<img src="image/statisticview.png" width="500">
+
+Kết thúc mỗi ca điểm danh sẽ là bảng thông kê, hiển thị các chi tiết những sinh viên nào đi học đúng giờ, đi học muộn, vắng kèm theo tâm trạng.
+
+</center>
+
+
+## Chức năng cho admin
+
+<center>
+<img src="image/admindashboard.png" width="500">
+
+Giao diện quản trị viên sử dụng để quản lý cơ sở dữ liệu phục vụ cho điểm danh, bao gồm thêm xóa sửa sinh viên và lớp học.
+</center>
+
+<center>
+<img src="image/adminstudent.png" width="500">
+
+Quản trị viên có thể thêm, xóa, hoặc sửa sinh viên trong cơ sở dữ liệu. Ở phần này, các bức ảnh do sinh viên cung cấp hoặc chụp sẽ được lấy làm dữ liệu đối chiếu điểm danh.
+</center>
+
+<center>
+<img src="image/admincourse.png" width="500">
+
+Quản trị viên có thể thêm, sửa, xóa các lớp học, thêm hoặc xóa sinh viên ra khỏi một lớp học nào đó.
+</center>
+
 
 
 # Cấu trúc hệ thống
 
-| Thành phần                    | Công nghệ sử dụng         |
+| Thành phần                    | Công nghệ/thư viện        |
 |-------------------------------|---------------------------|
-| Backend API                  | Python                     |
-| AI Model xử lý khuôn mặt     | DeepFace / face_recognition|
-| Cơ sở dữ liệu                | MySQL                      |
-| Giao diện người dùng (User)  | ReactJS                    |
-| Giao diện quản trị (Admin)   | HTML-CSS                   |
+| Backend                       | Python, FastAPI           |
+| AI Backend                    | DeepFace                  |
+| Cơ sở dữ liệu                 | MySQL                     |
+| Giao diện người dùng (User)   | ReactJS                   |
+| Giao diện quản trị (Admin)    | HTML-CSS-JS               |
 
 
 
@@ -79,11 +110,11 @@ Bước 5: Sử dụng hệ thống
 
 | Họ tên             | Mã sinh viên | Vai trò                             |
 |--------------------|--------------|-------------------------------------|
-| Lâm Đức Anh        |     23020326 | Xây dựng backend                    |
-| Nguyễn Gia Huy     |     23020377 | Xử lý model AI                      |
-| Nguyễn Duy Hoàng   |     23020368 | Xây dựng database                   |
-| Hoàng Văn Dương    |     23020349 | Thiết kế giao diện frontend - user  |
-| Nguyễn Thế Cương   |     23020337 | Thiết kế giao diện frontend - admin |
+| Lâm Đức Anh        |     23020326 | Quản lý dự án                       |
+| Nguyễn Gia Huy     |     23020377 | Phát triển mô đun AI                |
+| Hoàng Văn Dương    |     23020349 | Phát triển giao diện cho người dùng |
+| Nguyễn Thế Cương   |     23020337 | Phát triển giao diện cho admin      |
+| Nguyễn Duy Hoàng   |     23020368 | Xây dựng database, viết báo cáo     |
 
 
 
