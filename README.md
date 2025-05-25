@@ -12,12 +12,12 @@ Nếu đã cài sẵn Docker trên máy tính của mình, bạn có thể thự
 
 Bước 1: Khởi động Docker Desktop
 
-Bước 2: Tải xuống file `docker-compose.yml` tại repo này vào sao chép vào một thư mục bất kì. Tuy nhiên, mọi thứ sẽ hoạt động tốt nếu thư mục đó không chứa bất kì file hay thư mục nào khác.
+Bước 2: Tải xuống file `docker-compose.yml` cung cấp trong repo này vào sao chép vào một thư mục bất kì. Tuy nhiên, mọi thứ sẽ hoạt động tốt nếu thư mục đó không chứa bất kì file hay thư mục nào khác.
 
 Bước 3: Mở thư mục của bạn trong terminal và chạy câu lệnh sau:
 
 ```bash
-   docker-compose up
+   docker-compose up -d
 ```
 
 Bạn sẽ cần chờ một lúc để hệ thống khởi chạy.
@@ -29,10 +29,10 @@ Bước 4: Khi khởi động hoàn tất, bạn đã có thể sử dụng ứn
 
 # Các chức năng chính của hệ thống
 
-- Nhận diện và phân tích cảm xúc sinh viên
-- Thêm/xóa sinh viên, tạo lớp học.
-- Dễ dàng truy xuất thông tin sinh viên từ cơ sở dữ liệu.
-- Tạo ca điểm danh, setup thời gian linh hoạt.
+- Tạo ca điểm danh cho lớp học
+- Nhận diện và điểm danh sinh viên
+- Phân tích cảm xúc và tâm trạng đến lớp của sinh viên
+- Thêm, xóa, sửa thông tin của sinh viên, lớp học, thêm sinh viên vào lớp học
 
 
 ## Chức năng cho người dùng
