@@ -16,7 +16,7 @@ Hệ thống điểm danh và nhận diện cảm xúc sinh viên được xây 
 # Cài đặt
 
 1. **Cài đặt Docker Desktop**  
-   Tải và cài đặt Docker Desktop từ [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+   Tải và cài đặt Docker Desktop
 
 2. **Tải xuống folder lưu trữ của chúng tôi**  
 
@@ -34,18 +34,19 @@ Hệ thống điểm danh và nhận diện cảm xúc sinh viên được xây 
 ```bash
    docker-compose up -d
 ```
+
 8. **Truy cập và hệ thống**
 Mở trình duyệt truy cập http://localhost:8000/
 
 # Minh họa ứng dụng
 
-1. phát hiện và nhận dạng khuôn mặt trong thời gian thực (quay vd đã.... )
+1. Phát hiện và nhận dạng khuôn mặt trong thời gian thực (quay vd đã.... )
 
 <p align="center">
   <img src="image/phathien.png" alt="" width="300">
 </p>
 
-2. điếm danh và nhận diện cảm xúc chính xác
+2. Điểm danh và nhận diện cảm xúc chính xác
 
 <p align="center">
   <img src="image/thongtindiemdanh.png" alt="" width="300">
@@ -53,7 +54,17 @@ Mở trình duyệt truy cập http://localhost:8000/
 
 # Thông tin liên quan
 
-## 
+## Tài liệu hướng dẫn
+- Cài đặt Docker Desktop từ [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+- Đường dẫn tới giao diện frontend-User 
+- Đường dẫn tới giao diện frontend-Admin 
+## Dự án được xây dựng bằng
+- Python 3.12
+- Fast API
+- mySQL 
+- Docker & Docker compose
+- HTML, CSS & React
+
 
 
 
