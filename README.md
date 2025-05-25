@@ -41,11 +41,15 @@ Mở trình duyệt truy cập http://localhost:8000/
 
 1. phát hiện và nhận dạng khuôn mặt trong thời gian thực (quay vd đã.... )
 
-![](./image/phathien.png)
+<p align="center">
+  <img src="image/phathien.png" alt="" width="300">
+</p>
 
 2. điếm danh và nhận diện cảm xúc chính xác
 
-![](./image/thongtindiemdanh.png)
+<p align="center">
+  <img src="image/thongtindiemdanh.png" alt="" width="300">
+</p>
 
 # Thông tin liên quan
 
