@@ -2,6 +2,7 @@ import Header from '../components/Header';
 import Notification from '../components/Notification';
 import { API_ENDPOINTS } from "../constants/api";
 import { useParams } from 'react-router-dom';
+import dayjs from "dayjs";
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Spin, notification, Modal } from 'antd';
@@ -45,6 +46,7 @@ const AttendancePage: React.FC = () => {
   const [attendance, setAttendance] = useState<Attendance>();
   const [imageBase64, setImageBase64] = useState<string>();
   const [isDetecting, setIsDetecting] = useState(true);
+  const [attendanceEnded, setAttendanceEnded] = useState(false);
 
   // Fetch attendance and course info
   useEffect(() => {
@@ -54,6 +56,13 @@ const AttendancePage: React.FC = () => {
         const resAttendance = await fetch(API_ENDPOINTS.ATTENDANCE.GET_BY_ID(attendance_id));
         const attendanceResult = await resAttendance.json();
         setAttendance(attendanceResult.data);
+        // Kiểm tra attendance đã kết thúc chưa
+        if (
+          attendanceResult.data?.end_time &&
+          dayjs(attendanceResult.data.end_time).isBefore(dayjs())
+        ) {
+          setAttendanceEnded(true);
+        }
         if (attendanceResult.data && attendanceResult.data.course_id) {
           const resCourse = await fetch(API_ENDPOINTS.COURSE.GET_BY_ID(attendanceResult.data.course_id));
           const courseResult = await resCourse.json();
@@ -338,7 +347,25 @@ useEffect(() => {
     }
   };
 
-  
+  useEffect(() => {
+    if (!attendance_id) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(API_ENDPOINTS.ATTENDANCE.GET_BY_ID(attendance_id));
+        const result = await res.json();
+        if (
+          result.data?.end_time &&
+          dayjs(result.data.end_time).isBefore(dayjs())
+        ) {
+          setAttendanceEnded(true);
+        }
+      } catch (error) {
+        // Có thể xử lý lỗi nếu cần
+      }
+    }, 30000); // kiểm tra mỗi 15 giây
+
+    return () => clearInterval(interval);
+  }, [attendance_id]);
 
   if (!modelsLoaded) {
     return (
@@ -378,6 +405,16 @@ useEffect(() => {
           />
         </div>
       )}
+      <Modal
+        open={attendanceEnded}
+        closable={false}
+        okText="Về trang chủ"
+        cancelButtonProps={{ style: { display: 'none' } }}
+        onOk={() => navigate('/')}
+      >
+        <div className="text-xl font-semibold text-red-600 mb-2">Ca điểm danh này đã kết thúc!</div>
+        <div className="text-base text-gray-700">Bạn sẽ được chuyển về trang chủ.</div>
+      </Modal>
       <div className="flex flex-1 p-4">
         <div className="flex flex-col w-1/2 bg-white rounded-lg shadow mr-4 p-4">
           <div className="text-center text-blue-700 text-xl font-bold mb-4">

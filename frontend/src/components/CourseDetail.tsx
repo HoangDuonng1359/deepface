@@ -70,6 +70,20 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
      navigate('/statistics/' + attendance_id);
   };
 
+  const handleEndAttendance = async (attendance_id: number) => {
+    try {
+      await fetch(API_ENDPOINTS.ATTENDANCE.END_ATTENDANCE(attendance_id), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      // Có thể thêm thông báo thành công hoặc reload lại dữ liệu nếu cần
+    } catch (e) {
+      // Có thể thêm thông báo lỗi nếu cần
+    }
+  };
+
   // Kiểm tra attendance đầu tiên
   const firstAttendance = course.attendances && course.attendances.length > 0 ? course.attendances[0] : null;
   const now = dayjs();
@@ -80,6 +94,17 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course }) => {
       !firstAttendance.end_time ||
       dayjs(firstAttendance.end_time).isAfter(now)
     );
+
+  // Nếu ca điểm danh đã kết thúc, gọi API để end attendance
+  useEffect(() => {
+    if (
+      firstAttendance &&
+      firstAttendance.end_time &&
+      dayjs(firstAttendance.end_time).isBefore(now)
+    ) {
+      handleEndAttendance(firstAttendance.attendance_id);
+    }
+  }, [firstAttendance]);
 
   return (
     <div className="space-y-6 w-full h-full">
